@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YAGUBU - 야구 동호회</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <script>
+    (function(){try{var t=localStorage.getItem('yagubu_theme');if(t==='dark')document.body.setAttribute('data-theme','dark');else if(t==='light')document.body.setAttribute('data-theme','light');else if(typeof window.matchMedia!=='undefined'&&window.matchMedia('(prefers-color-scheme: dark)').matches)document.body.setAttribute('data-theme','dark');else document.body.setAttribute('data-theme','light');}catch(e){document.body.setAttribute('data-theme','light');}})();
+    </script>
+    <!-- 헤더 -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="logo">YAGUBU</div>
+        </div>
+        <div class="nav-center">
+            <a href="#teamIntro" class="nav-link">팀 소개</a>
+            <a href="#seasonSection" class="nav-link">기록 및 일정</a>
+        </div>
+        <div class="nav-right">
+            <a href="#communitySection" class="nav-link">커뮤니티</a>
+            <a href="#gallerySection" class="nav-link">갤러리</a>
+            <button type="button" class="btn-theme-toggle" id="themeToggleBtn" title="다크 모드" aria-label="다크 모드 전환">🌙</button>
+            <div class="login-user" id="loginUserLabel" style="display:none;"></div>
+            <button type="button" class="btn-login" id="loginBtn">로그인</button>
+        </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="main-content">
+        <!-- 팀 소개 -->
+        <section class="card team-intro-card" id="teamIntro">
+            <div class="card-header">
+                <h3><span class="icon">🏟️</span> 팀 소개</h3>
+            </div>
+            <div class="team-tabs">
+                <button type="button" class="tab-btn active" data-tab="history">팀 연혁 및 비젼</button>
+                <button type="button" class="tab-btn" data-tab="roster">선수단 구성</button>
+            </div>
+            <div class="team-panels">
+                <!-- 팀 연혁 및 비젼 -->
+                <div class="tab-panel active" id="team-tab-history">
+                    <div class="team-blocks">
+                        <div class="team-block">
+                            <div class="team-block-header">
+                                <h4>창단 스토리</h4>
+                                <button type="button" class="btn-notice-add" id="teamStoryEditBtn" title="창단 스토리 등록/수정">✏️</button>
+                            </div>
+                            <div class="team-block-body" id="teamStoryContent"></div>
+                        </div>
+                        <div class="team-block">
+                            <div class="team-block-header">
+                                <h4>팀이 추구하는 가치</h4>
+                                <button type="button" class="btn-notice-add" id="teamValuesEditBtn" title="팀 가치 등록/수정">✏️</button>
+                            </div>
+                            <div class="team-block-body" id="teamValuesContent"></div>
+                        </div>
+                        <div class="team-block">
+                            <div class="team-block-header">
+                                <h4>연혁</h4>
+                                <div class="team-block-actions">
+                                    <button type="button" class="btn-notice-add" id="teamHistoryEditBtn" title="연혁 등록/수정" style="display: none;">✏️</button>
+                                    <a href="#" class="more-link" id="teamHistoryMoreBtn">MORE</a>
+                                </div>
+                            </div>
+                            <div class="team-block-body" id="teamHistoryContent"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 선수단 구성 -->
+                <div class="tab-panel" id="team-tab-roster">
+                    <div class="tab-toolbar">
+                        <button type="button" class="btn-notice-add" id="playerAddBtn" title="선수 등록">✏️</button>
+                        <a href="#" class="more-link" id="playerMoreBtn">MORE</a>
+                    </div>
+                    <div class="schedule-table roster-table roster-table-3">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>등번호</th>
+                                    <th>성명</th>
+                                    <th>스텝여부</th>
+                                    <th>주포지션</th>
+                                    <th>부포지션</th>
+                                    <th>탈퇴여부</th>
+                                    <th>연락처</th>
+                                </tr>
+                            </thead>
+                            <tbody id="playerTableBody">
+                                <!-- 동적 로드 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 상단 3개 카드 -->
+        <div class="top-cards">
+            <!-- 최신 공지 -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="icon">⚡</span> 최신 공지</h3>
+                    <div class="card-header-actions">
+                        <button type="button" class="btn-notice-add" id="noticeAddBtn" title="공지 등록">✏️</button>
+                        <a href="#" class="more-link" id="noticeMoreBtn">MORE</a>
+                    </div>
+                </div>
+                <div class="notice-list" id="noticeList">
+                    <!-- 동적 로드 -->
+                </div>
+            </div>
+            
+            <!-- 다음 경기 일정 -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="icon">📅</span> 다음 경기 일정</h3>
+                    <div class="card-header-actions">
+                        <button type="button" class="btn-notice-add" id="scheduleAddBtn" title="경기 일정 등록">✏️</button>
+                        <a href="#" class="more-link" id="scheduleMoreBtn">MORE</a>
+                    </div>
+                </div>
+                <div id="scheduleList">
+                    <!-- 동적 로드 -->
+                </div>
+        </div>
+        
+            <!-- 최근 미디어 -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="icon">📷</span> 최근 미디어</h3>
+                    <div class="card-header-actions">
+                        <button type="button" class="btn-notice-add" id="mediaAddBtn" title="미디어 등록">✏️</button>
+                        <button type="button" class="btn-media-edit" id="mediaEditBtn" title="미디어 수정" disabled>수정</button>
+                        <a href="#" class="more-link" id="mediaMoreBtn">MORE</a>
+                    </div>
+                </div>
+                <div class="media-grid" id="mediaList">
+                    <!-- 동적 로드 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 슬로건 배너 -->
+        <div class="slogan-banner">
+            <div class="slogan-label">TEAM SLOGAN</div>
+            <div class="slogan-text">"열정과 도전, 함께하는 야구"</div>
+                </div>
+
+        <!-- 하단 2개 카드 -->
+        <div class="bottom-cards" id="seasonSection">
+            <!-- 시즌 기록 및 일정 -->
+            <div class="card season-card">
+                <div class="card-header">
+                    <h3><span class="icon">📋</span> 시즌 기록 및 일정</h3>
+                </div>
+                <div class="season-league-bar">
+                    <label for="leagueSelect" class="season-league-label">리그</label>
+                    <select id="leagueSelect" class="season-league-select">
+                        <option value="">전체</option>
+                        <option value="nono">노노리그</option>
+                        <option value="dongguk">동국대리그</option>
+                    </select>
+                </div>
+                <div class="season-tabs">
+                    <button type="button" class="tab-btn active" data-tab="schedule">경기일정</button>
+                    <button type="button" class="tab-btn" data-tab="team">팀기록</button>
+                    <button type="button" class="tab-btn" data-tab="personal">개인기록</button>
+                    <button type="button" class="tab-btn" data-tab="pitcher">투수기록</button>
+                </div>
+                <div class="tab-panels">
+                    <div class="tab-panel active" id="tab-schedule">
+                        <div class="schedule-tab-toolbar">
+                            <button type="button" class="btn-notice-add" id="seasonScheduleAddBtn" title="경기 일정·승패 등록">✏️</button>
+                            <a href="#" class="more-link" id="seasonScheduleMoreBtn">MORE</a>
+                        </div>
+                        <div class="schedule-table schedule-table-5">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>날짜/시간</th>
+                                        <th>대전</th>
+                                        <th>구장</th>
+                                        <th>성적</th>
+                                        <th>간시</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="seasonScheduleTableBody">
+                                    <!-- 동적 로드 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-panel" id="tab-team">
+                        <div class="team-records-wrap" id="teamRecordsWrap">
+                            <div class="team-records-left">
+                                <div class="team-records-card">
+                                    <div class="team-records-title">팀 기록실</div>
+                                    <div class="team-records-metric">
+                                        <div class="metric-label">팀 타율</div>
+                                        <div class="metric-value" id="teamBattingAvg">0.000</div>
+                                    </div>
+                                    <div class="team-records-metric">
+                                        <div class="metric-label">팀 방어율</div>
+                                        <div class="metric-value" id="teamEra">-</div>
+                                    </div>
+                                    <div class="team-records-metric">
+                                        <div class="metric-label">최근 전적</div>
+                                        <div class="metric-value" id="teamRecentRecord">0승 0패</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="team-records-right">
+                                <div class="team-rank-block">
+                                    <div class="team-rank-title">타율</div>
+                                    <table class="team-rank-table">
+                                        <thead>
+                                            <tr><th>순위</th><th>번호</th><th>성명</th><th>타율</th></tr>
+                                        </thead>
+                                        <tbody id="rankAvgBody"></tbody>
+                                    </table>
+                                </div>
+                                <div class="team-rank-block">
+                                    <div class="team-rank-title">안타</div>
+                                    <table class="team-rank-table">
+                                        <thead>
+                                            <tr><th>순위</th><th>번호</th><th>성명</th><th>안타</th></tr>
+                                        </thead>
+                                        <tbody id="rankHitsBody"></tbody>
+                                    </table>
+                                </div>
+                                <div class="team-rank-block">
+                                    <div class="team-rank-title">타점</div>
+                                    <table class="team-rank-table">
+                                        <thead>
+                                            <tr><th>순위</th><th>번호</th><th>성명</th><th>타점</th></tr>
+                                        </thead>
+                                        <tbody id="rankRbiBody"></tbody>
+                                    </table>
+                                </div>
+                                <div class="team-rank-block">
+                                    <div class="team-rank-title">도루</div>
+                                    <table class="team-rank-table">
+                                        <thead>
+                                            <tr><th>순위</th><th>번호</th><th>성명</th><th>도루</th></tr>
+                                        </thead>
+                                        <tbody id="rankSbBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-panel" id="tab-personal">
+                        <div class="tab-toolbar">
+                            <button type="button" class="btn-notice-add" id="personalRecordAddBtn" title="개인기록 등록">✏️</button>
+                            <a href="#" class="more-link" id="personalRecordMoreBtn">MORE</a>
+                        </div>
+                        <div class="schedule-table personal-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>등번호</th>
+                                        <th>성명</th>
+                                        <th>타석</th>
+                                        <th>타수</th>
+                                        <th>안타</th>
+                                        <th>타점</th>
+                                        <th>득점</th>
+                                        <th>사사구</th>
+                                        <th>삼진</th>
+                                        <th>도루</th>
+                                        <th>타율</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="personalRecordTableBody">
+                                    <!-- 동적 로드 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-panel" id="tab-pitcher">
+                        <div class="tab-toolbar">
+                            <button type="button" class="btn-notice-add" id="pitcherRecordAddBtn" title="투수기록 등록">✏️</button>
+                            <a href="#" class="more-link" id="pitcherRecordMoreBtn">MORE</a>
+                        </div>
+                        <div class="schedule-table personal-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>등번호</th>
+                                        <th>성명</th>
+                                        <th>이닝</th>
+                                        <th>피안타</th>
+                                        <th>자책점</th>
+                                        <th>승</th>
+                                        <th>패</th>
+                                        <th>세이브</th>
+                                        <th>방어율</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pitcherRecordTableBody">
+                                    <!-- 동적 로드 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 시즌 전적 (우측) -->
+            <div class="card stats-card">
+                <div class="card-header">
+                    <h3><span class="icon">🏆</span> 시즌 전적</h3>
+                </div>
+                <div class="win-rate-container">
+                    <div class="circle-progress">
+                        <div class="circle-inner">
+                            <div class="circle-value" id="statsWinRate">0%</div>
+                            <div class="circle-label">승률</div>
+                        </div>
+                    </div>
+                    <div class="stats-numbers">
+                        <div class="stat-item">
+                            <div class="stat-icon win">●</div>
+                            <div class="stat-value" id="statsWin">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon loss">●</div>
+                            <div class="stat-value" id="statsLoss">0</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon draw">●</div>
+                            <div class="stat-value" id="statsDraw">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 커뮤니티 (하단) -->
+        <section class="card community-card" id="communitySection">
+            <div class="card-header">
+                <h3><span class="icon">💬</span> 커뮤니티</h3>
+                <div class="card-header-actions">
+                    <button type="button" class="btn-notice-add" id="communityAddBtn" title="커뮤니티 글쓰기">✏️</button>
+                    <a href="#" class="more-link" id="communityMoreBtn">MORE</a>
+                </div>
+            </div>
+            <div class="community-list" id="communityList">
+                <div class="community-empty">아직 등록된 글이 없습니다.</div>
+            </div>
+        </section>
+
+        <!-- 팀활동 갤러리 (하단) -->
+        <section class="card gallery-card" id="gallerySection">
+            <div class="card-header">
+                <h3><span class="icon">🖼️</span> 팀활동 갤러리</h3>
+                <div class="card-header-actions">
+                    <button type="button" class="btn-notice-add" id="galleryAddBtn" title="사진 등록">📷</button>
+                    <a href="#" class="more-link" id="galleryMoreBtn">MORE</a>
+                </div>
+            </div>
+            <div class="gallery-filter-bar">
+                <label for="galleryFilterAlbum" class="gallery-filter-label">앨범</label>
+                <select id="galleryFilterAlbum" class="gallery-filter-select">
+                    <option value="">전체</option>
+                </select>
+                <label for="galleryFilterTag" class="gallery-filter-label">태그</label>
+                <select id="galleryFilterTag" class="gallery-filter-select">
+                    <option value="">전체</option>
+                </select>
+            </div>
+            <div class="gallery-grid" id="galleryGrid">
+                <div class="gallery-empty">아직 등록된 사진이 없습니다.</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 공지 등록 모달 -->
+    <div id="noticeAddModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="noticeAddModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3>공지 등록</h3>
+                <button type="button" class="modal-close" data-close="noticeAddModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="noticeAddForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label for="noticeTitle">제목</label>
+                        <input type="text" id="noticeTitle" placeholder="공지 제목" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="noticeDate">등록일</label>
+                        <input type="date" id="noticeDate" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="noticeContent">내용</label>
+                        <textarea id="noticeContent" rows="6" placeholder="상세 내용 (선택)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="noticeDeleteBtn" style="display:none;">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="noticeAddModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 전체 공지 목록 (기간 조회) 모달 -->
+    <div id="noticeListModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="noticeListModal"></div>
+        <div class="modal-content modal-list">
+            <div class="modal-header">
+                <h3>전체 공지사항</h3>
+                <button type="button" class="modal-close" data-close="noticeListModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="notice-filter">
+                    <div class="filter-row">
+                        <label>기간</label>
+                        <input type="date" id="noticeStartDate">
+                        <span class="filter-sep">~</span>
+                        <input type="date" id="noticeEndDate">
+                        <button type="button" class="btn btn-search" id="noticeSearchBtn">조회</button>
+                    </div>
+                </div>
+                <div class="notice-full-list" id="noticeFullList">
+                    <!-- 동적 로드 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="noticeListDeleteBtn" disabled>선택 삭제</button>
+                <button type="button" class="btn btn-cancel" data-close="noticeListModal">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 전체 경기 일정 모달 -->
+    <div id="scheduleListModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="scheduleListModal"></div>
+        <div class="modal-content modal-list">
+            <div class="modal-header">
+                <h3>전체 경기 일정</h3>
+                <button type="button" class="modal-close" data-close="scheduleListModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="notice-filter">
+                    <div class="filter-row">
+                        <label>리그</label>
+                        <select id="scheduleLeagueFilter">
+                            <option value="">전체</option>
+                            <option value="nono">노노리그</option>
+                            <option value="dongguk">동국대리그</option>
+                        </select>
+                        <label>기간</label>
+                        <input type="date" id="scheduleStartDate">
+                        <span class="filter-sep">~</span>
+                        <input type="date" id="scheduleEndDate">
+                        <button type="button" class="btn btn-search" id="scheduleSearchBtn">조회</button>
+                    </div>
+                </div>
+                <div class="notice-full-list" id="scheduleFullList">
+                    <!-- 동적 로드 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="scheduleListModal">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 경기 일정 등록 모달 -->
+    <div id="scheduleAddModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="scheduleAddModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3 id="scheduleModalTitle">경기 일정 등록</h3>
+                <button type="button" class="modal-close" data-close="scheduleAddModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="scheduleAddForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label for="scheduleLeague">리그</label>
+                        <select id="scheduleLeague" required>
+                            <option value="nono">노노리그</option>
+                            <option value="dongguk">동국대리그</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="scheduleDate">경기일</label>
+                        <input type="date" id="scheduleDate" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="scheduleTime">경기 시간</label>
+                        <input type="time" id="scheduleTime" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="scheduleOpponent">상대팀</label>
+                        <input type="text" id="scheduleOpponent" placeholder="상대팀명" required>
+                    </div>
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="scheduleLocation">구장</label>
+                            <input type="text" id="scheduleLocation" placeholder="구장명" required>
+                        </div>
+                        <div class="form-col">
+                            <label for="scheduleStatus">진행여부</label>
+                            <select id="scheduleStatus" required>
+                                <option value="예정">예정</option>
+                                <option value="진행중">진행중</option>
+                                <option value="완료">완료</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label for="scheduleBatOrder">선공/후공</label>
+                        <select id="scheduleBatOrder" required>
+                            <option value="선공">선공</option>
+                            <option value="후공">후공</option>
+                        </select>
+                    </div>
+                    <div class="form-row" id="scheduleResultRow" style="display: none;">
+                        <label for="scheduleResult">승패</label>
+                        <select id="scheduleResult">
+                            <option value="">경기예정</option>
+                            <option value="승">승</option>
+                            <option value="패">패</option>
+                            <option value="무">무</option>
+                        </select>
+                    </div>
+                    <div class="form-row schedule-score-row" id="scheduleScoreRow" style="display: none;">
+                        <label>스코어</label>
+                        <div class="schedule-score-inputs">
+                            <input type="number" id="scheduleOurScore" min="0" placeholder="우리" title="YAGUBU 득점">
+                            <span class="score-sep">:</span>
+                            <input type="number" id="scheduleOpponentScore" min="0" placeholder="상대" title="상대팀 득점">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="scheduleDeleteBtn" style="display:none;">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="scheduleAddModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 개인 기록 등록/수정 모달 -->
+    <div id="personalRecordModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="personalRecordModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3 id="personalRecordModalTitle">개인기록 등록</h3>
+                <button type="button" class="modal-close" data-close="personalRecordModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="personalRecordForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label for="prLeague">리그</label>
+                        <select id="prLeague" required>
+                            <option value="nono">노노리그</option>
+                            <option value="dongguk">동국대리그</option>
+                        </select>
+                    </div>
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="prJerseyNo">등번호</label>
+                            <input type="number" id="prJerseyNo" min="0" placeholder="등번호">
+                        </div>
+                        <div class="form-col">
+                            <label for="prName">성명</label>
+                            <input type="text" id="prName" placeholder="성명">
+                        </div>
+                    </div>
+
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="prPA">타석</label>
+                            <input type="number" id="prPA" min="0" value="0">
+                        </div>
+                        <div class="form-col">
+                            <label for="prAB">타수</label>
+                            <input type="number" id="prAB" min="0" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="prH">안타</label>
+                            <input type="number" id="prH" min="0" value="0">
+                        </div>
+                        <div class="form-col">
+                            <label for="prRBI">타점 (자동)</label>
+                            <input type="number" id="prRBI" min="0" value="0" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="prR">득점</label>
+                            <input type="number" id="prR" min="0" value="0">
+                        </div>
+                        <div class="form-col">
+                            <label for="prBB">사사구</label>
+                            <input type="number" id="prBB" min="0" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="prSO">삼진</label>
+                            <input type="number" id="prSO" min="0" value="0">
+                        </div>
+                        <div class="form-col">
+                            <label for="prSB">도루</label>
+                            <input type="number" id="prSB" min="0" value="0">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="prAVG">타율 (자동)</label>
+                        <input type="text" id="prAVG" value="0.000" readonly>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="personalRecordDeleteBtn" style="display:none;">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="personalRecordModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 개인 기록 전체보기(MORE) -->
+    <div id="personalRecordListModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="personalRecordListModal"></div>
+        <div class="modal-content modal-list modal-wide">
+            <div class="modal-header">
+                <h3>개인기록 전체보기</h3>
+                <button type="button" class="modal-close" data-close="personalRecordListModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="schedule-table personal-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>등번호</th>
+                                <th>성명</th>
+                                <th>타석</th>
+                                <th>타수</th>
+                                <th>안타</th>
+                                <th>타점</th>
+                                <th>득점</th>
+                                <th>사사구</th>
+                                <th>삼진</th>
+                                <th>도루</th>
+                                <th>타율</th>
+                            </tr>
+                        </thead>
+                        <tbody id="personalRecordFullBody">
+                            <!-- 동적 로드 -->
+                        </tbody>
+                    </table>
+                </div>
+                <p class="help-text">행 더블클릭: 상세 확인 및 수정</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="personalRecordListModal">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 투수기록 등록/수정 모달 -->
+    <div id="pitcherRecordModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="pitcherRecordModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3 id="pitcherRecordModalTitle">투수기록 등록</h3>
+                <button type="button" class="modal-close" data-close="pitcherRecordModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="pitcherRecordForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label for="pitchLeague">리그</label>
+                        <select id="pitchLeague" required>
+                            <option value="nono">노노리그</option>
+                            <option value="dongguk">동국대리그</option>
+                        </select>
+                    </div>
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="pitchJerseyNo">등번호</label>
+                            <input type="number" id="pitchJerseyNo" min="0" placeholder="등번호">
+                        </div>
+                        <div class="form-col">
+                            <label for="pitchName">성명</label>
+                            <input type="text" id="pitchName" placeholder="성명">
+                        </div>
+                    </div>
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="pitchIp">이닝</label>
+                            <input type="number" id="pitchIp" min="0" step="0.1" value="0" placeholder="예: 5.1">
+                        </div>
+                        <div class="form-col">
+                            <label for="pitchH">피안타</label>
+                            <input type="number" id="pitchH" min="0" value="0">
+                        </div>
+                    </div>
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="pitchEr">자책점</label>
+                            <input type="number" id="pitchEr" min="0" value="0">
+                        </div>
+                        <div class="form-col">
+                            <label for="pitchEra">방어율 (자동)</label>
+                            <input type="text" id="pitchEra" value="-" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="pitchW">승</label>
+                            <input type="number" id="pitchW" min="0" value="0">
+                        </div>
+                        <div class="form-col">
+                            <label for="pitchL">패</label>
+                            <input type="number" id="pitchL" min="0" value="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label for="pitchSv">세이브</label>
+                        <input type="number" id="pitchSv" min="0" value="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="pitcherRecordDeleteBtn" style="display:none;">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="pitcherRecordModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 투수기록 전체보기(MORE) -->
+    <div id="pitcherRecordListModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="pitcherRecordListModal"></div>
+        <div class="modal-content modal-list modal-wide">
+            <div class="modal-header">
+                <h3>투수기록 전체보기</h3>
+                <button type="button" class="modal-close" data-close="pitcherRecordListModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="schedule-table personal-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>등번호</th>
+                                <th>성명</th>
+                                <th>이닝</th>
+                                <th>피안타</th>
+                                <th>자책점</th>
+                                <th>승</th>
+                                <th>패</th>
+                                <th>세이브</th>
+                                <th>방어율</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pitcherRecordFullBody">
+                            <!-- 동적 로드 -->
+                        </tbody>
+                    </table>
+                </div>
+                <p class="help-text">행 더블클릭: 수정</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="pitcherRecordListModal">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 팀 소개: 창단 스토리 -->
+    <div id="teamStoryModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="teamStoryModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3>창단 스토리 등록</h3>
+                <button type="button" class="modal-close" data-close="teamStoryModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="teamStoryForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label for="teamStoryText">내용</label>
+                        <textarea id="teamStoryText" rows="8" placeholder="창단 스토리를 입력하세요"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="teamStoryDeleteBtn">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="teamStoryModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 팀 소개: 팀 가치 -->
+    <div id="teamValuesModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="teamValuesModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3>팀 가치 등록</h3>
+                <button type="button" class="modal-close" data-close="teamValuesModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="teamValuesForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label for="teamValuesText">내용</label>
+                        <textarea id="teamValuesText" rows="8" placeholder="팀이 추구하는 가치를 입력하세요"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="teamValuesDeleteBtn">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="teamValuesModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 팀 소개: 연혁 -->
+    <div id="teamHistoryModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="teamHistoryModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3>연혁 등록</h3>
+                <button type="button" class="modal-close" data-close="teamHistoryModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="teamHistoryForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label for="teamHistoryYear">년도</label>
+                        <input type="number" id="teamHistoryYear" min="1900" max="2100" placeholder="예: 2025">
+                    </div>
+                    <div class="form-row">
+                        <label for="teamHistoryText">내용</label>
+                        <textarea id="teamHistoryText" rows="10" placeholder="연혁 내용을 줄바꿈으로 입력하세요. (년도 없이 입력하면 위 ‘년도’가 자동으로 붙습니다)&#10;예) 01 창단&#10;예) 03 첫 공식 경기"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="teamHistoryDeleteBtn">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="teamHistoryModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 팀 소개: 연혁 전체보기(MORE) -->
+    <div id="teamHistoryListModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="teamHistoryListModal"></div>
+        <div class="modal-content modal-list">
+            <div class="modal-header">
+                <h3>연혁 전체보기</h3>
+                <div class="card-header-actions">
+                    <button type="button" class="btn-notice-add" id="teamHistoryRowAddBtn" title="연혁 추가">✏️</button>
+                    <button type="button" class="modal-close" data-close="teamHistoryListModal" aria-label="닫기">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="history-grid-wrap history-full-wrap">
+                    <table class="history-grid">
+                        <thead>
+                            <tr>
+                                <th>년</th>
+                                <th>내용</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teamHistoryFullBody">
+                            <!-- 동적 로드 -->
+                        </tbody>
+                    </table>
+                </div>
+                <p class="help-text">행 더블클릭: 수정</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="teamHistoryListModal">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 팀 소개: 연혁 항목 추가/수정 -->
+    <div id="teamHistoryRowModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="teamHistoryRowModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3 id="teamHistoryRowModalTitle">연혁 추가</h3>
+                <button type="button" class="modal-close" data-close="teamHistoryRowModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="teamHistoryRowForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label for="teamHistoryRowYear">년도</label>
+                        <input type="number" id="teamHistoryRowYear" min="1900" max="2100" placeholder="예: 2025" required>
+                    </div>
+                    <div class="form-row">
+                        <label for="teamHistoryRowContent">내용</label>
+                        <input type="text" id="teamHistoryRowContent" placeholder="예: 노노리그 우승" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="teamHistoryRowDeleteBtn" style="display:none;">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="teamHistoryRowModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 선수단 등록/수정 모달 -->
+    <div id="playerModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="playerModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3 id="playerModalTitle">선수 등록</h3>
+                <button type="button" class="modal-close" data-close="playerModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="playerForm">
+                <div class="modal-body">
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="playerJerseyNo">등번호</label>
+                            <input type="number" id="playerJerseyNo" min="0" required>
+                        </div>
+                        <div class="form-col">
+                            <label for="playerName">성명</label>
+                            <input type="text" id="playerName" required>
+                        </div>
+                    </div>
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="playerPrimaryPos">주포지션</label>
+                            <input type="text" id="playerPrimaryPos" placeholder="예: 투수">
+                        </div>
+                        <div class="form-col">
+                            <label for="playerSecondaryPos">부포지션</label>
+                            <input type="text" id="playerSecondaryPos" placeholder="예: 1루수">
+                        </div>
+                    </div>
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="playerRole">스텝여부</label>
+                            <select id="playerRole">
+                                <option value="9">관리자</option>
+                                <option value="1">감독</option>
+                                <option value="2">코치</option>
+                                <option value="3">총무</option>
+                                <option value="4" selected>선수</option>
+                            </select>
+                        </div>
+                        <div class="form-col">
+                            <label for="playerStatus">탈퇴여부</label>
+                            <select id="playerStatus">
+                                <option value="활동">활동</option>
+                                <option value="탈퇴">탈퇴</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label for="playerContact">연락처</label>
+                        <input type="text" id="playerContact" placeholder="010-0000-0000">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="playerDeleteBtn" style="display:none;">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="playerModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 선수단 전체보기(MORE) 모달 -->
+    <div id="playerListModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="playerListModal"></div>
+        <div class="modal-content modal-list modal-wide">
+            <div class="modal-header">
+                <h3>선수단 전체</h3>
+                <button type="button" class="modal-close" data-close="playerListModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="schedule-table roster-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>등번호</th>
+                                <th>성명</th>
+                                <th>스텝여부</th>
+                                <th>주포지션</th>
+                                <th>부포지션</th>
+                                <th>탈퇴여부</th>
+                                <th>연락처</th>
+                            </tr>
+                        </thead>
+                        <tbody id="playerFullBody">
+                            <!-- 동적 로드 -->
+                        </tbody>
+                    </table>
+                </div>
+                <p class="help-text">행 더블클릭: 수정</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="playerListModal">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 미디어 등록 모달 -->
+    <div id="mediaAddModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="mediaAddModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3 id="mediaModalTitle">미디어 등록</h3>
+                <button type="button" class="modal-close" data-close="mediaAddModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="mediaAddForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label for="mediaType">유형</label>
+                        <select id="mediaType" required>
+                            <option value="동영상">동영상</option>
+                            <option value="사진">사진</option>
+                            <option value="유튜브">유튜브</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label for="mediaTitle">제목</label>
+                        <input type="text" id="mediaTitle" placeholder="제목" required>
+                    </div>
+                    <div class="form-row media-type-row" id="mediaRowPhoto" style="display: none;">
+                        <div class="media-photo-edit-wrap">
+                            <div id="mediaPhotoPreview" class="media-photo-preview" style="display: none;">
+                                <label>현재 사진</label>
+                                <div><img id="mediaPhotoPreviewImg" src="" alt="" /></div>
+                            </div>
+                            <div>
+                                <label for="mediaPhotoFile">사진 등록</label>
+                                <input type="file" id="mediaPhotoFile" accept="image/*">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row media-type-row" id="mediaRowVideo">
+                        <label for="mediaVideoUrl">동영상 URL</label>
+                        <input type="text" id="mediaVideoUrl" placeholder="동영상 링크를 입력하세요">
+                    </div>
+                    <div class="form-row media-type-row" id="mediaRowYoutube" style="display: none;">
+                        <label for="mediaYoutubeUrl">유튜브 URL</label>
+                        <input type="text" id="mediaYoutubeUrl" placeholder="유튜브 영상 링크 입력 (youtube.com 또는 youtu.be)">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="mediaDeleteBtn" style="display:none;">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="mediaAddModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 전체 미디어 목록 모달 -->
+    <div id="mediaListModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="mediaListModal"></div>
+        <div class="modal-content modal-list">
+            <div class="modal-header">
+                <h3>전체 미디어</h3>
+                <button type="button" class="modal-close" data-close="mediaListModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="notice-filter">
+                    <div class="filter-row">
+                        <label>유형</label>
+                        <select id="mediaFilterType">
+                            <option value="">전체</option>
+                            <option value="동영상">동영상</option>
+                            <option value="사진">사진</option>
+                            <option value="유튜브">유튜브</option>
+                        </select>
+                        <button type="button" class="btn btn-search" id="mediaSearchBtn">조회</button>
+                    </div>
+                </div>
+                <div class="media-full-grid" id="mediaFullList">
+                    <!-- 동적 로드 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="mediaListModal">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 미디어 미리보기 모달 -->
+    <div id="mediaPreviewModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="mediaPreviewModal"></div>
+        <div class="modal-content modal-preview">
+            <div class="modal-header">
+                <h3 id="mediaPreviewTitle">미리보기</h3>
+                <button type="button" class="modal-close" data-close="mediaPreviewModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body preview-body">
+                <div id="mediaPreviewContent"></div>
+                <a id="mediaYoutubeLink" href="#" target="_blank" rel="noopener" class="btn btn-youtube" style="display: none;">유튜브에서 보기</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 커뮤니티 글쓰기 모달 -->
+    <div id="communityAddModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="communityAddModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3 id="communityModalTitle">커뮤니티 글쓰기</h3>
+                <button type="button" class="modal-close" data-close="communityAddModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="communityAddForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label for="communityAuthor">글쓴이</label>
+                        <input type="text" id="communityAuthor" placeholder="로그인 사용자" readonly>
+                    </div>
+                    <div class="form-row">
+                        <label for="communityTitle">제목</label>
+                        <input type="text" id="communityTitle" placeholder="제목" required>
+                    </div>
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="communityDate">작성일</label>
+                            <input type="date" id="communityDate" required>
+                        </div>
+                        <div class="form-col">
+                            <label for="communityTime">작성 시간</label>
+                            <input type="time" id="communityTime" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label for="communityContent">내용</label>
+                        <textarea id="communityContent" rows="8" placeholder="내용을 입력하세요"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="communityDeleteBtn" style="display:none;">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="communityAddModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 커뮤니티 전체보기(MORE) 모달 -->
+    <div id="communityListModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="communityListModal"></div>
+        <div class="modal-content modal-list">
+            <div class="modal-header">
+                <h3>커뮤니티 전체보기</h3>
+                <button type="button" class="modal-close" data-close="communityListModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="notice-filter">
+                    <div class="filter-row">
+                        <label>기간</label>
+                        <input type="date" id="communityStartDate">
+                        <span class="filter-sep">~</span>
+                        <input type="date" id="communityEndDate">
+                        <button type="button" class="btn btn-search" id="communitySearchBtn">조회</button>
+                    </div>
+                </div>
+                <div class="notice-full-list" id="communityFullList">
+                    <div class="notice-empty">커뮤니티 기능은 준비 중입니다.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="communityListModal">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 커뮤니티 상세보기 모달 -->
+    <div id="communityViewModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="communityViewModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3>커뮤니티 상세</h3>
+                <button type="button" class="modal-close" data-close="communityViewModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="community-view-title" id="communityViewTitle">-</div>
+                <div class="community-view-meta" id="communityViewMeta">-</div>
+                <div class="community-view-content" id="communityViewContent"></div>
+                <div class="community-view-like-bar">
+                    <button type="button" class="btn-community-like" id="communityLikeBtn" aria-pressed="false" title="좋아요">♥ <span id="communityLikeCount">0</span></button>
+                </div>
+
+                <div class="community-comments">
+                    <div class="community-comments-header">
+                        <div class="community-comments-title">댓글</div>
+                        <div class="community-comments-count" id="communityCommentsCount">0</div>
+                    </div>
+                    <div class="community-comments-list" id="communityCommentsList"></div>
+                    <form id="communityCommentForm" class="community-comment-form">
+                        <div class="form-row">
+                            <label for="communityCommentText">댓글 내용</label>
+                            <textarea id="communityCommentText" rows="3" placeholder="댓글을 입력하세요 (1000BYTE 이내)"></textarea>
+                        </div>
+                        <div class="modal-footer community-comment-footer">
+                            <button type="submit" class="btn btn-primary" id="communityCommentSubmitBtn">댓글 등록</button>
+                        </div>
+                    </form>
+                </div>
+                <p class="help-text">수정/삭제는 작성자 또는 스텝(감독/코치/총무/관리자)만 가능합니다.</p>
+            </div>
+            <div class="modal-footer community-view-footer">
+                <div class="community-view-nav">
+                    <button type="button" class="btn btn-cancel" id="communityPrevBtn">이전 글</button>
+                    <button type="button" class="btn btn-cancel" id="communityNextBtn">다음 글</button>
+                </div>
+                <div class="community-view-actions">
+                    <button type="button" class="btn btn-primary" id="communityViewEditBtn">수정</button>
+                    <button type="button" class="btn btn-danger" id="communityViewDeleteBtn">삭제</button>
+                    <button type="button" class="btn btn-cancel" data-close="communityViewModal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 갤러리 등록/수정 모달 -->
+    <div id="galleryAddModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="galleryAddModal"></div>
+        <div class="modal-content modal-form modal-wide">
+            <div class="modal-header">
+                <h3 id="galleryModalTitle">팀활동 갤러리 등록</h3>
+                <button type="button" class="modal-close" data-close="galleryAddModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="galleryAddForm">
+                <div class="modal-body">
+                    <div class="form-row">
+                        <label for="galleryAuthor">등록자</label>
+                        <input type="text" id="galleryAuthor" readonly>
+                    </div>
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="galleryDate">작성일</label>
+                            <input type="date" id="galleryDate" required>
+                        </div>
+                        <div class="form-col">
+                            <label for="galleryTime">작성 시간</label>
+                            <input type="time" id="galleryTime" required>
+                        </div>
+                    </div>
+                    <div class="form-row form-row-2col">
+                        <div class="form-col">
+                            <label for="galleryEventDate">경기/행사 날짜 (선택)</label>
+                            <input type="date" id="galleryEventDate">
+                        </div>
+                        <div class="form-col">
+                            <label for="galleryAlbumName">앨범명 (경기·행사)</label>
+                            <input type="text" id="galleryAlbumName" placeholder="예) 3월 정기전">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label for="galleryTags">태그 (쉼표 구분)</label>
+                        <input type="text" id="galleryTags" placeholder="예: 시합, MT, 연습">
+                    </div>
+                    <div class="form-row">
+                        <label for="galleryShortText">짧은글(30자 내외)</label>
+                        <input type="text" id="galleryShortText" maxlength="30" placeholder="예) 오늘 경기 승리했습니다!">
+                    </div>
+                    <div class="form-row">
+                        <label for="galleryContent">내용</label>
+                        <textarea id="galleryContent" rows="6" placeholder="내용을 입력하세요"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <label for="galleryPhotoFile">사진 등록</label>
+                        <input type="file" id="galleryPhotoFile" accept="image/*" required>
+                        <div class="gallery-photo-preview" id="galleryPhotoPreview" style="display:none;">
+                            <img id="galleryPhotoPreviewImg" alt="" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="galleryDeleteBtn" style="display:none;">삭제</button>
+                    <button type="submit" class="btn btn-primary">저장</button>
+                    <button type="button" class="btn btn-cancel" data-close="galleryAddModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 갤러리 전체보기(MORE) 모달 -->
+    <div id="galleryListModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="galleryListModal"></div>
+        <div class="modal-content modal-list modal-wide">
+            <div class="modal-header">
+                <h3>팀활동 갤러리 전체</h3>
+                <button type="button" class="modal-close" data-close="galleryListModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="gallery-filter-bar">
+                    <label for="galleryListFilterAlbum" class="gallery-filter-label">앨범</label>
+                    <select id="galleryListFilterAlbum" class="gallery-filter-select">
+                        <option value="">전체</option>
+                    </select>
+                    <label for="galleryListFilterTag" class="gallery-filter-label">태그</label>
+                    <select id="galleryListFilterTag" class="gallery-filter-select">
+                        <option value="">전체</option>
+                    </select>
+                </div>
+                <div class="gallery-full-grid" id="galleryFullGrid"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" data-close="galleryListModal">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 갤러리 미리보기(상세) 모달 -->
+    <div id="galleryViewModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="galleryViewModal"></div>
+        <div class="modal-content modal-preview modal-wide">
+            <div class="modal-header">
+                <h3 id="galleryViewTitle">갤러리 상세</h3>
+                <button type="button" class="modal-close" data-close="galleryViewModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body preview-body">
+                <div class="gallery-view-meta" id="galleryViewMeta">-</div>
+                <div class="gallery-view-short" id="galleryViewShort"></div>
+                <div class="gallery-view-image-wrap">
+                    <img id="galleryViewImg" alt="" />
+                </div>
+                <div class="gallery-view-content" id="galleryViewContent"></div>
+            </div>
+            <div class="modal-footer community-view-footer">
+                <div></div>
+                <div class="community-view-actions">
+                    <button type="button" class="btn btn-primary" id="galleryViewEditBtn">수정</button>
+                    <button type="button" class="btn btn-danger" id="galleryViewDeleteBtn">삭제</button>
+                    <button type="button" class="btn btn-cancel" data-close="galleryViewModal">닫기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로그인 모달 -->
+    <div id="loginModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="loginModal"></div>
+        <div class="modal-content modal-form">
+            <div class="modal-header">
+                <h3>로그인</h3>
+                <button type="button" class="modal-close" data-close="loginModal" aria-label="닫기">&times;</button>
+            </div>
+            <form id="loginForm">
+                <div class="modal-body">
+                    <div id="loginLocalFields">
+                        <div class="form-row">
+                            <label for="loginName">성명</label>
+                            <input type="text" id="loginName" placeholder="예: 홍길동">
+                        </div>
+                        <div class="form-row">
+                            <label for="loginPhoneLast4">전화번호 뒤 4자리</label>
+                            <input type="text" id="loginPhoneLast4" inputmode="numeric" maxlength="4" placeholder="예: 1234">
+                        </div>
+                    </div>
+
+                    <div id="loginSupabaseFields" style="display: none;">
+                        <div class="form-row">
+                            <label for="loginEmail">이메일</label>
+                            <input type="email" id="loginEmail" placeholder="example@email.com" autocomplete="username">
+                        </div>
+                        <div class="form-row">
+                            <label for="loginPassword">비밀번호</label>
+                            <input type="password" id="loginPassword" placeholder="비밀번호" autocomplete="current-password">
+                        </div>
+                        <p class="help-text">Supabase 공유 모드에서는 이메일/비밀번호로 로그인합니다.</p>
+                    </div>
+                    <div id="loginMessage" class="login-message" style="display: none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">확인</button>
+                    <button type="button" class="btn btn-cancel" data-close="loginModal">취소</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supabase (공유 저장용). 키를 설정하면 Supabase 사용, 아니면 localStorage 사용 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
