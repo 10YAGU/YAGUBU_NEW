@@ -2813,6 +2813,20 @@
         applyPermissionUi();
     }
 
+    /** 성명이 "관리자"일 때만 이메일/비밀번호 입력란 활성화, 그 외에는 비우고 비활성화 */
+    function applyLoginEmailFieldByRole() {
+        var name = (loginName && loginName.value ? loginName.value : '').trim();
+        var isAdmin = name === '관리자';
+        if (loginEmail) {
+            if (!isAdmin) loginEmail.value = '';
+            setDisabled(loginEmail, !isAdmin, isAdmin ? '이메일' : '관리자만 이메일 로그인 가능');
+        }
+        if (loginPassword) {
+            if (!isAdmin) loginPassword.value = '';
+            setDisabled(loginPassword, !isAdmin, isAdmin ? '비밀번호' : '관리자만 이메일 로그인 가능');
+        }
+    }
+
     function openLoginModal() {
         var sbMode = isSupabaseReady();
         // Supabase 모드에서도 기본은 "간편 로그인(성명+뒤4자리)"를 유지하고
@@ -2824,6 +2838,7 @@
         if (loginPhoneLast4) loginPhoneLast4.value = '';
         if (loginEmail) loginEmail.value = '';
         if (loginPassword) loginPassword.value = '';
+        applyLoginEmailFieldByRole();
         showLoginMessage('', false);
         openModal('loginModal');
         if (loginName) loginName.focus();
@@ -5223,6 +5238,10 @@
             });
         }
         if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit);
+        if (loginName) {
+            loginName.addEventListener('input', applyLoginEmailFieldByRole);
+            loginName.addEventListener('change', applyLoginEmailFieldByRole);
+        }
 
         if (noticeAddBtn) noticeAddBtn.addEventListener('click', withManage(openNoticeAddModal));
         if (noticeMoreBtn) {
