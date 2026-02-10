@@ -769,7 +769,7 @@
         var client = ensureSb();
         var row = {
             id: p.id,
-            jersey_no: parseInt(String(p.jerseyNo || 0), 10),
+            jersey_no: String(p.jerseyNo != null && p.jerseyNo !== '' ? p.jerseyNo : '').trim(),
             name: p.name || '',
             role: p.role || '4',
             primary_pos: p.primaryPos || '',
@@ -1774,9 +1774,9 @@
 
     async function handlePlayerSubmit(e) {
         e.preventDefault();
-        var jersey = toInt(playerJerseyNo && playerJerseyNo.value);
+        var jersey = (playerJerseyNo && playerJerseyNo.value != null) ? String(playerJerseyNo.value).trim() : '';
         var name = (playerName && playerName.value ? playerName.value : '').trim();
-        if (!jersey) {
+        if (jersey === '') {
             alert('등번호를 입력해 주세요.');
             if (playerJerseyNo) playerJerseyNo.focus();
             return;
@@ -2385,9 +2385,9 @@
         e.preventDefault();
         seedPlayersIfEmpty();
         var leagueId = prLeague && prLeague.value ? normalizeLeagueId(prLeague.value) : (getSelectedLeague() || 'nono');
-        var jersey = toInt(prJerseyNo && prJerseyNo.value);
+        var jersey = (prJerseyNo && prJerseyNo.value != null) ? String(prJerseyNo.value).trim() : '';
         var name = (prName && prName.value ? prName.value : '').trim();
-        if (!jersey) {
+        if (jersey === '') {
             alert('등번호를 입력해 주세요.');
             if (prJerseyNo) prJerseyNo.focus();
             return;
@@ -2616,9 +2616,9 @@
         e.preventDefault();
         seedPlayersIfEmpty();
         var leagueId = pitchLeague && pitchLeague.value ? normalizeLeagueId(pitchLeague.value) : (getSelectedLeague() || 'nono');
-        var jersey = toInt(pitchJerseyNo && pitchJerseyNo.value);
+        var jersey = (pitchJerseyNo && pitchJerseyNo.value != null) ? String(pitchJerseyNo.value).trim() : '';
         var name = (pitchName && pitchName.value ? pitchName.value : '').trim();
-        if (!jersey) {
+        if (jersey === '') {
             alert('등번호를 입력해 주세요.');
             if (pitchJerseyNo) pitchJerseyNo.focus();
             return;
@@ -2813,7 +2813,7 @@
         applyPermissionUi();
     }
 
-    
+
     /** 성명이 "관리자"일 때만 이메일/비밀번호 입력란 활성화, 그 외에는 비우고 비활성화 */
     function applyLoginEmailFieldByRole() {
         var name = (loginName && loginName.value ? loginName.value : '').trim();
