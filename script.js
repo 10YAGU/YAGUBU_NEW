@@ -1786,6 +1786,19 @@
             if (playerName) playerName.focus();
             return;
         }
+        // 등번호 중복 방지(수정 시 본인은 제외)
+        var jerseyKey = normalizeJerseyNoForCompare(jersey);
+        var dupPlayers = isDbMode() ? await fetchPlayers(false) : getPlayers();
+        var dup = dupPlayers.find(function (p) {
+            if (!p) return false;
+            if (editingPlayerId && String(p.id) === String(editingPlayerId)) return false;
+            return normalizeJerseyNoForCompare(p.jerseyNo) === jerseyKey;
+        });
+        if (dup) {
+            alert('이미 사용 중인 등번호입니다. (' + String(dup.jerseyNo || '') + ' / ' + String(dup.name || '') + ')');
+            if (playerJerseyNo) playerJerseyNo.focus();
+            return;
+        }
         var ppos = (playerPrimaryPos && playerPrimaryPos.value ? playerPrimaryPos.value : '').trim();
         var spos = (playerSecondaryPos && playerSecondaryPos.value ? playerSecondaryPos.value : '').trim();
         var role = playerRole && playerRole.value ? String(playerRole.value) : '4';
@@ -1990,6 +2003,14 @@
     function toInt(val) {
         var n = parseInt(String(val || '0'), 10);
         return isNaN(n) ? 0 : n;
+    }
+
+    // 등번호 비교용 정규화(선행 0 제거). 저장 값은 그대로 두되, 중복 체크에는 정규화 값을 사용.
+    function normalizeJerseyNoForCompare(val) {
+        var s = String(val == null ? '' : val).trim();
+        if (!s) return '';
+        if (/^\d+$/.test(s)) return String(parseInt(s, 10)); // "00" -> "0", "01" -> "1"
+        return s;
     }
 
     function calcAvg(hits, atBats) {
@@ -2219,12 +2240,42 @@
         })[0] || null;
     }
 
+    // 투수 이닝(IP) 표기 파서: 5, 5.1(1/3), 5.2(2/3) 지원. (그 외 5.3 등은 invalid)
+    // - innings: ERA 계산용 실제 이닝(예: 5.1 -> 5.3333...)
+    // - ipForStore: 기존과 동일하게 표기값을 숫자로 저장(예: 5.1)
+    function parsePitchIp(ipVal) {
+        var raw = String(ipVal == null ? '' : ipVal).trim();
+        if (raw === '') return { ok: true, innings: 0, ipForStore: 0, raw: '' };
+        // "5." 같은 입력 방지
+        if (!/^\d+(\.\d+)?$/.test(raw)) return { ok: false, innings: 0, ipForStore: 0, raw: raw };
+
+        var parts = raw.split('.');
+        var whole = parseInt(parts[0], 10);
+        if (!parts[1] || parts[1] === '0') {
+            return { ok: true, innings: whole, ipForStore: whole, raw: raw };
+        }
+
+        // 소수점 1자리: 표기법(1/3, 2/3) 처리
+        if (parts[1].length === 1) {
+            var d = parseInt(parts[1], 10);
+            if (d === 1) return { ok: true, innings: whole + (1 / 3), ipForStore: parseFloat(raw), raw: raw };
+            if (d === 2) return { ok: true, innings: whole + (2 / 3), ipForStore: parseFloat(raw), raw: raw };
+            return { ok: false, innings: 0, ipForStore: 0, raw: raw };
+        }
+
+        // 소수점이 여러 자리면(과거 데이터 등) "실제 이닝"으로 간주해 그대로 사용
+        var n = parseFloat(raw);
+        if (isNaN(n) || n < 0) return { ok: false, innings: 0, ipForStore: 0, raw: raw };
+        return { ok: true, innings: n, ipForStore: n, raw: raw };
+    }
+
     /** 방어율: (자책점 * 9) / 이닝, 이닝 0이면 '-' */
     function calcEra(er, ip) {
         var e = toInt(er);
-        var i = parseFloat(String(ip || 0));
-        if (i <= 0) return '-';
-        return ((e * 9) / i).toFixed(2);
+        var parsed = parsePitchIp(ip);
+        var innings = parsed.ok ? parsed.innings : parseFloat(String(ip || 0));
+        if (!innings || innings <= 0) return '-';
+        return ((e * 9) / innings).toFixed(2);
     }
 
     async function loadPersonalRecordsTable(force) {
@@ -2398,6 +2449,44 @@
             return;
         }
 
+        // 개인기록 수치 검증(기본 논리)
+        var pa = toInt(prPA && prPA.value);
+        var ab = toInt(prAB && prAB.value);
+        var h = toInt(prH && prH.value);
+        var rbi = toInt(prRBI && prRBI.value);
+        var r = toInt(prR && prR.value);
+        var bb = toInt(prBB && prBB.value);
+        var so = toInt(prSO && prSO.value);
+        var sb = toInt(prSB && prSB.value);
+        if (pa < 0 || ab < 0 || h < 0 || rbi < 0 || r < 0 || bb < 0 || so < 0 || sb < 0) {
+            alert('기록 수치는 0 이상이어야 합니다.');
+            return;
+        }
+        if (ab > pa) {
+            alert('타수(AB)는 타석(PA)보다 클 수 없습니다.');
+            if (prAB) prAB.focus();
+            return;
+        }
+        if (h > ab) {
+            alert('안타(H)는 타수(AB)보다 클 수 없습니다.');
+            if (prH) prH.focus();
+            return;
+        }
+
+        // 등번호 중복 방지(수정 시 본인은 제외)
+        var prJerseyKey = normalizeJerseyNoForCompare(jersey);
+        var prDupPlayers = isDbMode() ? await fetchPlayers(false) : getPlayers();
+        var prDup = prDupPlayers.find(function (p) {
+            if (!p) return false;
+            if (editingPersonalPlayerId && String(p.id) === String(editingPersonalPlayerId)) return false;
+            return normalizeJerseyNoForCompare(p.jerseyNo) === prJerseyKey;
+        });
+        if (prDup) {
+            alert('이미 사용 중인 등번호입니다. (' + String(prDup.jerseyNo || '') + ' / ' + String(prDup.name || '') + ')');
+            if (prJerseyNo) prJerseyNo.focus();
+            return;
+        }
+
         var players = isDbMode() ? await fetchPlayers(false) : getPlayers();
         var pid = editingPersonalPlayerId;
         if (!pid) {
@@ -2443,15 +2532,15 @@
             playerId: pid,
             jerseyNo: jersey,
             name: name,
-            pa: toInt(prPA && prPA.value),
-            ab: toInt(prAB && prAB.value),
-            h: toInt(prH && prH.value),
-            rbi: toInt(prRBI && prRBI.value),
-            r: toInt(prR && prR.value),
-            bb: toInt(prBB && prBB.value),
-            so: toInt(prSO && prSO.value),
-            sb: toInt(prSB && prSB.value),
-            avg: prAVG ? (prAVG.value || calcAvg(prH && prH.value, prAB && prAB.value)) : '0.000',
+            pa: pa,
+            ab: ab,
+            h: h,
+            rbi: rbi,
+            r: r,
+            bb: bb,
+            so: so,
+            sb: sb,
+            avg: prAVG ? (prAVG.value || calcAvg(h, ab)) : '0.000',
             updatedAt: Date.now()
         };
         if (isDbMode()) {
@@ -2478,8 +2567,8 @@
 
     function syncPitcherEra() {
         var er = toInt(pitchEr && pitchEr.value);
-        var ip = parseFloat(String(pitchIp && pitchIp.value || 0));
-        if (pitchEra) pitchEra.value = calcEra(er, ip);
+        var parsed = parsePitchIp(pitchIp && pitchIp.value);
+        if (pitchEra) pitchEra.value = parsed.ok ? calcEra(er, parsed.ipForStore) : '-';
     }
 
     async function loadPitcherRecordsTable(force) {
@@ -2629,6 +2718,37 @@
             return;
         }
 
+        // 등번호 중복 방지(수정 시 본인은 제외)
+        var pitchJerseyKey = normalizeJerseyNoForCompare(jersey);
+        var pitchDupPlayers = isDbMode() ? await fetchPlayers(false) : getPlayers();
+        var pitchDup = pitchDupPlayers.find(function (p) {
+            if (!p) return false;
+            if (editingPitcherPlayerId && String(p.id) === String(editingPitcherPlayerId)) return false;
+            return normalizeJerseyNoForCompare(p.jerseyNo) === pitchJerseyKey;
+        });
+        if (pitchDup) {
+            alert('이미 사용 중인 등번호입니다. (' + String(pitchDup.jerseyNo || '') + ' / ' + String(pitchDup.name || '') + ')');
+            if (pitchJerseyNo) pitchJerseyNo.focus();
+            return;
+        }
+
+        // 투수 이닝/수치 검증
+        var ipParsed = parsePitchIp(pitchIp && pitchIp.value);
+        if (!ipParsed.ok) {
+            alert('이닝(IP) 형식이 올바르지 않습니다. 예: 5, 5.1(1/3), 5.2(2/3)');
+            if (pitchIp) pitchIp.focus();
+            return;
+        }
+        var h = toInt(pitchH && pitchH.value);
+        var er = toInt(pitchEr && pitchEr.value);
+        var w = toInt(pitchW && pitchW.value);
+        var l = toInt(pitchL && pitchL.value);
+        var sv = toInt(pitchSv && pitchSv.value);
+        if (ipParsed.innings < 0 || h < 0 || er < 0 || w < 0 || l < 0 || sv < 0) {
+            alert('기록 수치는 0 이상이어야 합니다.');
+            return;
+        }
+
         var players = isDbMode() ? await fetchPlayers(false) : getPlayers();
         var pid = editingPitcherPlayerId;
         if (!pid) {
@@ -2667,16 +2787,15 @@
         }
 
         syncPitcherEra();
-        var ip = parseFloat(String(pitchIp && pitchIp.value || 0));
         var rec = {
             leagueId: leagueId,
             playerId: pid,
-            ip: ip,
-            h: toInt(pitchH && pitchH.value),
-            er: toInt(pitchEr && pitchEr.value),
-            w: toInt(pitchW && pitchW.value),
-            l: toInt(pitchL && pitchL.value),
-            sv: toInt(pitchSv && pitchSv.value),
+            ip: ipParsed.ipForStore,
+            h: h,
+            er: er,
+            w: w,
+            l: l,
+            sv: sv,
             updatedAt: Date.now()
         };
         if (isDbMode()) {
