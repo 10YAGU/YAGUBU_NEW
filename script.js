@@ -2813,6 +2813,7 @@
         applyPermissionUi();
     }
 
+    
     /** 성명이 "관리자"일 때만 이메일/비밀번호 입력란 활성화, 그 외에는 비우고 비활성화 */
     function applyLoginEmailFieldByRole() {
         var name = (loginName && loginName.value ? loginName.value : '').trim();
