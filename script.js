@@ -2206,6 +2206,17 @@
         });
     }
 
+    // 팀기록/시즌전적에 반영하지 않을 구장 (시범경기, 올스타)
+    var EXCLUDED_VENUE_PATTERNS = ['시범경기', '올스타'];
+    function isExcludedVenue(location) {
+        if (!location || typeof location !== 'string') return false;
+        var loc = String(location).trim();
+        return EXCLUDED_VENUE_PATTERNS.some(function (p) { return loc.indexOf(p) !== -1; });
+    }
+    function filterSchedulesExcludeVenues(list) {
+        return (list || []).filter(function (s) { return !isExcludedVenue(s && s.location); });
+    }
+
     function aggregatePersonalRecords(records) {
         var by = {};
         (records || []).forEach(function (r) {
@@ -2277,8 +2288,8 @@
             if (totalIp > 0) teamEra = ((totalEr * 9) / totalIp).toFixed(2);
         }
 
-        // 최근 전적: 완료된 경기 중 최근 10경기 기준 승/패
-        var schedules = (schedulesAll || []).filter(function (s) { return s.status === '완료' && (s.result === '승' || s.result === '패'); });
+        // 최근 전적: 완료된 경기 중 최근 10경기 기준 승/패 (시범경기·올스타 구장 제외)
+        var schedules = filterSchedulesExcludeVenues(schedulesAll || []).filter(function (s) { return s.status === '완료' && (s.result === '승' || s.result === '패'); });
         schedules.sort(function (a, b) {
             var da = a.date ? new Date(a.date) : null;
             var db = b.date ? new Date(b.date) : null;
@@ -4975,6 +4986,7 @@
     async function loadSeasonStats(force) {
         var leagueId = getSelectedLeague();
         var raw = filterSchedulesByLeague(await fetchSchedules(!!force), leagueId);
+        raw = filterSchedulesExcludeVenues(raw); // 시범경기·올스타 구장 제외
         var completed = raw.filter(function (s) { return s.status === '완료'; });
         var wins = 0, losses = 0, draws = 0;
         completed.forEach(function (s) {
