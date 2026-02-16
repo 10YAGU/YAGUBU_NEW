@@ -2079,6 +2079,13 @@
         return true;
     }
 
+    // 팀기록·개인기록·투수기록·선수 콤보박스에서 관리자(role 9) 제외
+    function isPlayerForRecords(p) {
+        if (!isActivePlayer(p)) return false;
+        if (String(p.role || '4') === '9') return false;
+        return true;
+    }
+
     async function loadPlayerTable(force) {
         if (!playerTableBody) return;
         seedPlayersIfEmpty();
@@ -2261,8 +2268,8 @@
     }
 
     function computeTeamRecords(players, recs, schedulesAll, pitcherRecs) {
-        // 개인기록 합산으로 팀 타율 계산 (활동 선수 기준)
-        players = (players || []).filter(isActivePlayer);
+        // 개인기록 합산으로 팀 타율 계산 (활동 선수 기준, 관리자 제외)
+        players = (players || []).filter(isPlayerForRecords);
         recs = recs || [];
         var recById = {};
         recs.forEach(function (r) { recById[r.playerId] = r; });
@@ -2309,7 +2316,7 @@
     }
 
     function buildLeaderboardRows(metricKey, players, recs) {
-        players = (players || []).filter(isActivePlayer);
+        players = (players || []).filter(isPlayerForRecords);
         recs = recs || [];
         var recById = {};
         recs.forEach(function (r) { recById[r.playerId] = r; });
@@ -2469,7 +2476,7 @@
     async function loadPersonalRecordsTable(force) {
         if (!personalRecordTableBody) return;
         seedPlayersIfEmpty();
-        var players = (await fetchPlayers(!!force)).filter(isActivePlayer);
+        var players = (await fetchPlayers(!!force)).filter(isPlayerForRecords);
         players.sort(function (a, b) { return toInt(a.jerseyNo) - toInt(b.jerseyNo); });
         var leagueId = getSelectedLeague();
         var records = recordsForLeague(await fetchPersonalRecords(!!force), leagueId);
@@ -2518,7 +2525,7 @@
     async function renderPersonalRecordsToTbody(tbody, force) {
         if (!tbody) return;
         seedPlayersIfEmpty();
-        var players = (await fetchPlayers(!!force)).filter(isActivePlayer);
+        var players = (await fetchPlayers(!!force)).filter(isPlayerForRecords);
         players.sort(function (a, b) { return toInt(a.jerseyNo) - toInt(b.jerseyNo); });
         var leagueId = getSelectedLeague();
         var records = recordsForLeague(await fetchPersonalRecords(!!force), leagueId);
@@ -2762,7 +2769,7 @@
     async function loadPitcherRecordsTable(force) {
         if (!pitcherRecordTableBody) return;
         seedPlayersIfEmpty();
-        var players = (await fetchPlayers(!!force)).filter(isActivePlayer);
+        var players = (await fetchPlayers(!!force)).filter(isPlayerForRecords);
         players.sort(function (a, b) { return toInt(a.jerseyNo) - toInt(b.jerseyNo); });
         var leagueId = getSelectedLeague();
         var records = pitcherRecordsForLeague(await fetchPitcherRecords(!!force), leagueId);
@@ -2807,7 +2814,7 @@
     async function renderPitcherRecordsToTbody(tbody, force) {
         if (!tbody) return;
         seedPlayersIfEmpty();
-        var players = (await fetchPlayers(!!force)).filter(isActivePlayer);
+        var players = (await fetchPlayers(!!force)).filter(isPlayerForRecords);
         players.sort(function (a, b) { return toInt(a.jerseyNo) - toInt(b.jerseyNo); });
         var leagueId = getSelectedLeague();
         var records = pitcherRecordsForLeague(await fetchPitcherRecords(!!force), leagueId);
@@ -4672,7 +4679,7 @@
         }
         var players = [];
         try {
-            players = (await fetchPlayers(false)).filter(function (p) { return p.status !== '탈퇴'; });
+            players = (await fetchPlayers(false)).filter(isPlayerForRecords);
         } catch (e) {
             console.error(e);
         }
