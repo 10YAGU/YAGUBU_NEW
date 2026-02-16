@@ -8,6 +8,8 @@
         PLAYERS: 'yagubu_players',
         PERSONAL: 'yagubu_personal_records',
         PITCHER: 'yagubu_pitcher_records',
+        GAME_BATTING_LINES: 'yagubu_game_batting_lines',
+        GAME_PITCHING_LINES: 'yagubu_game_pitching_lines',
         COMMUNITY: 'yagubu_community_posts',
         COMMUNITY_COMMENTS: 'yagubu_community_comments',
         GALLERY: 'yagubu_gallery_items',
@@ -166,6 +168,14 @@
     var seasonScheduleAddBtn = document.getElementById('seasonScheduleAddBtn');
     var seasonScheduleMoreBtn = document.getElementById('seasonScheduleMoreBtn');
     var seasonScheduleTableBody = document.getElementById('seasonScheduleTableBody');
+    var gameScorecardModalTitle = document.getElementById('gameScorecardModalTitle');
+    var gameScorecardInfo = document.getElementById('gameScorecardInfo');
+    var gameBattingLinesBody = document.getElementById('gameBattingLinesBody');
+    var gamePitchingLinesBody = document.getElementById('gamePitchingLinesBody');
+    var gameBattingAddRowBtn = document.getElementById('gameBattingAddRowBtn');
+    var gamePitchingAddRowBtn = document.getElementById('gamePitchingAddRowBtn');
+    var gameScorecardSaveBtn = document.getElementById('gameScorecardSaveBtn');
+    var currentScorecardScheduleId = null;
     var statsWinRate = document.getElementById('statsWinRate');
     var statsWin = document.getElementById('statsWin');
     var statsLoss = document.getElementById('statsLoss');
@@ -392,6 +402,30 @@
 
     function savePitcherRecords(arr) {
         localStorage.setItem(STORAGE_KEYS.PITCHER, JSON.stringify(arr || []));
+    }
+
+    function getGameBattingLines() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEYS.GAME_BATTING_LINES) || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveGameBattingLines(arr) {
+        localStorage.setItem(STORAGE_KEYS.GAME_BATTING_LINES, JSON.stringify(arr || []));
+    }
+
+    function getGamePitchingLines() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEYS.GAME_PITCHING_LINES) || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveGamePitchingLines(arr) {
+        localStorage.setItem(STORAGE_KEYS.GAME_PITCHING_LINES, JSON.stringify(arr || []));
     }
 
     function getCommunityPosts() {
@@ -827,6 +861,149 @@
         };
         var res = await client.from('personal_records').upsert(row, { onConflict: 'league_id,player_id' });
         if (res.error) throw res.error;
+    }
+
+    async function dbListGameBattingLines(scheduleId) {
+        if (!scheduleId) return [];
+        if (!isSupabaseReady()) {
+            return (getGameBattingLines() || []).filter(function (r) { return r && r.scheduleId === scheduleId; });
+        }
+        var client = ensureSb();
+        var res = await client.from('game_batting_lines').select('*').eq('schedule_id', scheduleId).order('created_at', { ascending: true });
+        if (res.error) throw res.error;
+        return (res.data || []).map(function (r) {
+            return {
+                id: r.id,
+                scheduleId: r.schedule_id,
+                playerId: r.player_id,
+                pa: r.pa,
+                ab: r.ab,
+                h: r.h,
+                rbi: r.rbi,
+                r: r.r,
+                bb: r.bb,
+                so: r.so,
+                sb: r.sb,
+                battingOrder: r.batting_order != null ? r.batting_order : null,
+                createdAt: r.created_at ? sbMs(r.created_at) : Date.now()
+            };
+        });
+    }
+
+    async function dbListGamePitchingLines(scheduleId) {
+        if (!scheduleId) return [];
+        if (!isSupabaseReady()) {
+            return (getGamePitchingLines() || []).filter(function (r) { return r && r.scheduleId === scheduleId; });
+        }
+        var client = ensureSb();
+        var res = await client.from('game_pitching_lines').select('*').eq('schedule_id', scheduleId).order('created_at', { ascending: true });
+        if (res.error) throw res.error;
+        return (res.data || []).map(function (r) {
+            return {
+                id: r.id,
+                scheduleId: r.schedule_id,
+                playerId: r.player_id,
+                ip: r.ip,
+                h: r.h,
+                er: r.er,
+                w: r.w,
+                l: r.l,
+                sv: r.sv,
+                createdAt: r.created_at ? sbMs(r.created_at) : Date.now()
+            };
+        });
+    }
+
+    async function dbReplaceGameBattingLines(scheduleId, lines) {
+        if (!scheduleId) return;
+        if (!isSupabaseReady()) {
+            var all = (getGameBattingLines() || []).filter(function (r) { return r && r.scheduleId !== scheduleId; });
+            (lines || []).forEach(function (ln) {
+                all.push({
+                    id: ln.id || 'gbl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9),
+                    scheduleId: scheduleId,
+                    playerId: ln.playerId,
+                    pa: toInt(ln.pa),
+                    ab: toInt(ln.ab),
+                    h: toInt(ln.h),
+                    rbi: toInt(ln.rbi),
+                    r: toInt(ln.r),
+                    bb: toInt(ln.bb),
+                    so: toInt(ln.so),
+                    sb: toInt(ln.sb),
+                    battingOrder: ln.battingOrder != null && ln.battingOrder !== '' ? parseInt(String(ln.battingOrder), 10) : null,
+                    createdAt: Date.now()
+                });
+            });
+            saveGameBattingLines(all);
+            return;
+        }
+        var client = ensureSb();
+        var resDel = await client.from('game_batting_lines').delete().eq('schedule_id', scheduleId);
+        if (resDel.error) throw resDel.error;
+        if (!lines || !lines.length) return;
+        var rows = lines.map(function (ln) {
+            return {
+                id: ln.id || 'gbl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9),
+                schedule_id: scheduleId,
+                player_id: ln.playerId,
+                pa: toInt(ln.pa),
+                ab: toInt(ln.ab),
+                h: toInt(ln.h),
+                rbi: toInt(ln.rbi),
+                r: toInt(ln.r),
+                bb: toInt(ln.bb),
+                so: toInt(ln.so),
+                sb: toInt(ln.sb),
+                batting_order: ln.battingOrder != null && ln.battingOrder !== '' ? parseInt(String(ln.battingOrder), 10) : null,
+                created_at: new Date(ln.createdAt || Date.now()).toISOString()
+            };
+        });
+        var resIns = await client.from('game_batting_lines').insert(rows);
+        if (resIns.error) throw resIns.error;
+    }
+
+    async function dbReplaceGamePitchingLines(scheduleId, lines) {
+        if (!scheduleId) return;
+        if (!isSupabaseReady()) {
+            var all = (getGamePitchingLines() || []).filter(function (r) { return r && r.scheduleId !== scheduleId; });
+            (lines || []).forEach(function (ln) {
+                all.push({
+                    id: ln.id || 'gpl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9),
+                    scheduleId: scheduleId,
+                    playerId: ln.playerId,
+                    ip: parseFloat(String(ln.ip || '0')) || 0,
+                    h: toInt(ln.h),
+                    er: toInt(ln.er),
+                    w: toInt(ln.w),
+                    l: toInt(ln.l),
+                    sv: toInt(ln.sv),
+                    createdAt: Date.now()
+                });
+            });
+            saveGamePitchingLines(all);
+            return;
+        }
+        var client = ensureSb();
+        var resDel = await client.from('game_pitching_lines').delete().eq('schedule_id', scheduleId);
+        if (resDel.error) throw resDel.error;
+        if (!lines || !lines.length) return;
+        var rows = lines.map(function (ln) {
+            return {
+                id: ln.id || 'gpl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9),
+                schedule_id: scheduleId,
+                player_id: ln.playerId,
+                ip: parseFloat(String(ln.ip || '0')) || 0,
+                h: toInt(ln.h),
+                er: toInt(ln.er),
+                w: toInt(ln.w),
+                l: toInt(ln.l),
+                sv: toInt(ln.sv),
+                created_at: new Date(ln.createdAt || Date.now()).toISOString()
+            };
+        });
+        var resIns = await client.from('game_pitching_lines').insert(rows);
+        if (resIns.error) throw resIns.error;
     }
 
     async function dbDeleteNotice(id) {
@@ -4412,6 +4589,182 @@
         openModal('scheduleAddModal');
     }
 
+    function playerSelectOptions(players, selectedId) {
+        var opts = (players || []).map(function (p) {
+            var sel = (p.id === selectedId) ? ' selected' : '';
+            return '<option value="' + escapeHtml(p.id || '') + '"' + sel + '>' + escapeHtml(String(p.jerseyNo || '') + ' ' + (p.name || '')) + '</option>';
+        });
+        return '<option value="">선수 선택</option>' + opts.join('');
+    }
+
+    function makeGameBattingRow(players, line) {
+        line = line || {};
+        var pid = line.playerId || '';
+        var rowId = line.id || 'gbl_row_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        return '<tr class="game-line-row" data-row-id="' + escapeHtml(rowId) + '">' +
+            '<td><select class="game-line-player-select">' + playerSelectOptions(players, pid) + '</select></td>' +
+            '<td><input type="number" class="game-line-pa" min="0" value="' + (line.pa != null ? line.pa : 0) + '" /></td>' +
+            '<td><input type="number" class="game-line-ab" min="0" value="' + (line.ab != null ? line.ab : 0) + '" /></td>' +
+            '<td><input type="number" class="game-line-h" min="0" value="' + (line.h != null ? line.h : 0) + '" /></td>' +
+            '<td><input type="number" class="game-line-rbi" min="0" value="' + (line.rbi != null ? line.rbi : 0) + '" /></td>' +
+            '<td><input type="number" class="game-line-r" min="0" value="' + (line.r != null ? line.r : 0) + '" /></td>' +
+            '<td><input type="number" class="game-line-bb" min="0" value="' + (line.bb != null ? line.bb : 0) + '" /></td>' +
+            '<td><input type="number" class="game-line-so" min="0" value="' + (line.so != null ? line.so : 0) + '" /></td>' +
+            '<td><input type="number" class="game-line-sb" min="0" value="' + (line.sb != null ? line.sb : 0) + '" /></td>' +
+            '<td><button type="button" class="btn btn-small btn-remove-line" title="행 삭제">삭제</button></td></tr>';
+    }
+
+    function makeGamePitchingRow(players, line) {
+        line = line || {};
+        var pid = line.playerId || '';
+        var rowId = line.id || 'gpl_row_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        return '<tr class="game-line-row" data-row-id="' + escapeHtml(rowId) + '">' +
+            '<td><select class="game-line-player-select">' + playerSelectOptions(players, pid) + '</select></td>' +
+            '<td><input type="number" class="game-line-ip" min="0" step="0.1" value="' + (line.ip != null && line.ip !== '' ? line.ip : 0) + '" placeholder="5.1" /></td>' +
+            '<td><input type="number" class="game-line-h" min="0" value="' + (line.h != null ? line.h : 0) + '" /></td>' +
+            '<td><input type="number" class="game-line-er" min="0" value="' + (line.er != null ? line.er : 0) + '" /></td>' +
+            '<td><input type="number" class="game-line-w" min="0" value="' + (line.w != null ? line.w : 0) + '" /></td>' +
+            '<td><input type="number" class="game-line-l" min="0" value="' + (line.l != null ? line.l : 0) + '" /></td>' +
+            '<td><input type="number" class="game-line-sv" min="0" value="' + (line.sv != null ? line.sv : 0) + '" /></td>' +
+            '<td><button type="button" class="btn btn-small btn-remove-line" title="행 삭제">삭제</button></td></tr>';
+    }
+
+    async function openGameScorecardModal(scheduleId) {
+        if (!scheduleId) return;
+        currentScorecardScheduleId = scheduleId;
+        if (gameScorecardModalTitle) gameScorecardModalTitle.textContent = '경기 기록지';
+        if (gameScorecardInfo) gameScorecardInfo.textContent = '로딩 중...';
+        if (gameBattingLinesBody) gameBattingLinesBody.innerHTML = '';
+        if (gamePitchingLinesBody) gamePitchingLinesBody.innerHTML = '';
+        if (gameScorecardSaveBtn) gameScorecardSaveBtn.disabled = true;
+        openModal('gameScorecardModal');
+
+        var schedules = [];
+        try {
+            schedules = await fetchSchedules(false);
+        } catch (e) {
+            console.error(e);
+        }
+        var s = schedules.filter(function (x) { return x.id === scheduleId; })[0];
+        if (!s) {
+            if (gameScorecardInfo) {
+                gameScorecardInfo.textContent = '경기 정보를 불러올 수 없습니다. Supabase 사용 시 우측 상단에서 이메일/비밀번호로 로그인해 주세요.';
+                gameScorecardInfo.style.color = 'var(--accent)';
+            }
+            return;
+        }
+        var dt = formatScheduleDateTime(s.date, s.time);
+        var title = (dt || '') + ' vs ' + (s.opponent || '');
+        if (gameScorecardInfo) {
+            gameScorecardInfo.textContent = title;
+            gameScorecardInfo.style.color = '';
+        }
+        var players = [];
+        try {
+            players = (await fetchPlayers(false)).filter(function (p) { return p.status !== '탈퇴'; });
+        } catch (e) {
+            console.error(e);
+        }
+        var battingLines = [];
+        var pitchingLines = [];
+        try {
+            battingLines = await dbListGameBattingLines(scheduleId);
+            pitchingLines = await dbListGamePitchingLines(scheduleId);
+        } catch (e) {
+            console.error(e);
+        }
+        if (gameBattingLinesBody) {
+            gameBattingLinesBody.innerHTML = battingLines.length ? battingLines.map(function (ln) { return makeGameBattingRow(players, ln); }).join('') : '';
+            gameBattingLinesBody.querySelectorAll('.btn-remove-line').forEach(function (btn) {
+                btn.addEventListener('click', function () { btn.closest('tr').remove(); });
+            });
+        }
+        if (gamePitchingLinesBody) {
+            gamePitchingLinesBody.innerHTML = pitchingLines.length ? pitchingLines.map(function (ln) { return makeGamePitchingRow(players, ln); }).join('') : '';
+            gamePitchingLinesBody.querySelectorAll('.btn-remove-line').forEach(function (btn) {
+                btn.addEventListener('click', function () { btn.closest('tr').remove(); });
+            });
+        }
+        if (gameBattingAddRowBtn) {
+            gameBattingAddRowBtn.onclick = function () {
+                if (!gameBattingLinesBody) return;
+                var wrap = document.createElement('tbody');
+                wrap.innerHTML = makeGameBattingRow(players, {});
+                var newTr = wrap.querySelector('tr');
+                if (newTr) {
+                    gameBattingLinesBody.appendChild(newTr);
+                    newTr.querySelector('.btn-remove-line').addEventListener('click', function () { newTr.remove(); });
+                }
+            };
+        }
+        if (gamePitchingAddRowBtn) {
+            gamePitchingAddRowBtn.onclick = function () {
+                if (!gamePitchingLinesBody) return;
+                var wrap = document.createElement('tbody');
+                wrap.innerHTML = makeGamePitchingRow(players, {});
+                var newTr = wrap.querySelector('tr');
+                if (newTr) {
+                    gamePitchingLinesBody.appendChild(newTr);
+                    newTr.querySelector('.btn-remove-line').addEventListener('click', function () { newTr.remove(); });
+                }
+            };
+        }
+        if (gameScorecardSaveBtn) gameScorecardSaveBtn.disabled = false;
+    }
+
+    async function handleGameScorecardSave() {
+        var scheduleId = currentScorecardScheduleId;
+        if (!scheduleId) return;
+        var battingLines = [];
+        if (gameBattingLinesBody) {
+            gameBattingLinesBody.querySelectorAll('tr.game-line-row').forEach(function (tr) {
+                var sel = tr.querySelector('.game-line-player-select');
+                var playerId = sel && sel.value ? sel.value.trim() : '';
+                if (!playerId) return;
+                battingLines.push({
+                    playerId: playerId,
+                    pa: parseInt(tr.querySelector('.game-line-pa') && tr.querySelector('.game-line-pa').value ? tr.querySelector('.game-line-pa').value : 0, 10) || 0,
+                    ab: parseInt(tr.querySelector('.game-line-ab') && tr.querySelector('.game-line-ab').value ? tr.querySelector('.game-line-ab').value : 0, 10) || 0,
+                    h: parseInt(tr.querySelector('.game-line-h') && tr.querySelector('.game-line-h').value ? tr.querySelector('.game-line-h').value : 0, 10) || 0,
+                    rbi: parseInt(tr.querySelector('.game-line-rbi') && tr.querySelector('.game-line-rbi').value ? tr.querySelector('.game-line-rbi').value : 0, 10) || 0,
+                    r: parseInt(tr.querySelector('.game-line-r') && tr.querySelector('.game-line-r').value ? tr.querySelector('.game-line-r').value : 0, 10) || 0,
+                    bb: parseInt(tr.querySelector('.game-line-bb') && tr.querySelector('.game-line-bb').value ? tr.querySelector('.game-line-bb').value : 0, 10) || 0,
+                    so: parseInt(tr.querySelector('.game-line-so') && tr.querySelector('.game-line-so').value ? tr.querySelector('.game-line-so').value : 0, 10) || 0,
+                    sb: parseInt(tr.querySelector('.game-line-sb') && tr.querySelector('.game-line-sb').value ? tr.querySelector('.game-line-sb').value : 0, 10) || 0
+                });
+            });
+        }
+        var pitchingLines = [];
+        if (gamePitchingLinesBody) {
+            gamePitchingLinesBody.querySelectorAll('tr.game-line-row').forEach(function (tr) {
+                var sel = tr.querySelector('.game-line-player-select');
+                var playerId = sel && sel.value ? sel.value.trim() : '';
+                if (!playerId) return;
+                var ipEl = tr.querySelector('.game-line-ip');
+                var ipVal = ipEl && ipEl.value !== undefined && ipEl.value !== '' ? parseFloat(ipEl.value) : 0;
+                pitchingLines.push({
+                    playerId: playerId,
+                    ip: isNaN(ipVal) ? 0 : ipVal,
+                    h: parseInt(tr.querySelector('.game-line-h') && tr.querySelector('.game-line-h').value ? tr.querySelector('.game-line-h').value : 0, 10) || 0,
+                    er: parseInt(tr.querySelector('.game-line-er') && tr.querySelector('.game-line-er').value ? tr.querySelector('.game-line-er').value : 0, 10) || 0,
+                    w: parseInt(tr.querySelector('.game-line-w') && tr.querySelector('.game-line-w').value ? tr.querySelector('.game-line-w').value : 0, 10) || 0,
+                    l: parseInt(tr.querySelector('.game-line-l') && tr.querySelector('.game-line-l').value ? tr.querySelector('.game-line-l').value : 0, 10) || 0,
+                    sv: parseInt(tr.querySelector('.game-line-sv') && tr.querySelector('.game-line-sv').value ? tr.querySelector('.game-line-sv').value : 0, 10) || 0
+                });
+            });
+        }
+        try {
+            await dbReplaceGameBattingLines(scheduleId, battingLines);
+            await dbReplaceGamePitchingLines(scheduleId, pitchingLines);
+            currentScorecardScheduleId = null;
+            closeModal('gameScorecardModal');
+            alert('저장되었습니다.');
+        } catch (err) {
+            console.error(err);
+            alert('저장 중 오류가 났습니다. ' + (err && err.message ? err.message : ''));
+        }
+    }
+
     function closeScheduleAddModal() {
         editingScheduleId = null;
         if (scheduleDeleteBtn) scheduleDeleteBtn.style.display = 'none';
@@ -4582,7 +4935,7 @@
             return da.getTime() - db.getTime();
         });
         if (raw.length === 0) {
-            seasonScheduleTableBody.innerHTML = '<tr><td colspan="5" class="schedule-table-empty">등록된 경기가 없습니다.</td></tr>';
+            seasonScheduleTableBody.innerHTML = '<tr><td colspan="6" class="schedule-table-empty">등록된 경기가 없습니다.</td></tr>';
             return;
         }
         seasonScheduleTableBody.innerHTML = raw.map(function (s) {
@@ -4601,13 +4954,21 @@
                 '<td>' + vs + '</td>' +
                 '<td>' + loc + '</td>' +
                 '<td><span class="status-badge ' + res.cls + '">' + escapeHtml(res.label) + '</span>' + scoreStr + '</td>' +
-                '<td><span class="detail-icon">🔍</span></td></tr>';
+                '<td><span class="detail-icon">🔍</span></td>' +
+                '<td><button type="button" class="btn btn-scorecard" data-schedule-id="' + escapeHtml(s.id || '') + '" title="경기 기록지">📋 기록지</button></td></tr>';
         }).join('');
         seasonScheduleTableBody.querySelectorAll('.schedule-table-row').forEach(function (el) {
             el.addEventListener('dblclick', withManage(function () {
                 var id = el.getAttribute('data-schedule-id');
                 if (id) return openScheduleEditModal(id);
             }));
+        });
+        seasonScheduleTableBody.querySelectorAll('.btn-scorecard').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var id = btn.getAttribute('data-schedule-id');
+                if (id) openGameScorecardModal(id);
+            });
         });
     }
 
@@ -5160,6 +5521,7 @@
                 else if (id === 'galleryViewModal') closeGalleryViewModal();
                 else if (id === 'scheduleAddModal') closeScheduleAddModal();
                 else if (id === 'scheduleListModal') closeScheduleListModal();
+                else if (id === 'gameScorecardModal') { currentScorecardScheduleId = null; closeModal('gameScorecardModal'); }
                 else if (id === 'personalRecordModal') closePersonalRecordModal();
                 else if (id === 'personalRecordListModal') closePersonalRecordListModal();
                 else if (id === 'pitcherRecordModal') closePitcherRecordModal();
@@ -5472,6 +5834,7 @@
         if (scheduleSearchBtn) scheduleSearchBtn.addEventListener('click', withAuth(runScheduleSearch));
         if (scheduleLeagueFilter) scheduleLeagueFilter.addEventListener('change', withAuth(runScheduleSearch));
         if (scheduleAddForm) scheduleAddForm.addEventListener('submit', withManage(handleScheduleAddSubmit));
+        if (gameScorecardSaveBtn) gameScorecardSaveBtn.addEventListener('click', withManage(function (e) { if (e && e.preventDefault) e.preventDefault(); return handleGameScorecardSave(); }));
 
         if (personalRecordAddBtn) personalRecordAddBtn.addEventListener('click', withManage(function () { return openPersonalRecordModal(null); }));
         if (personalRecordMoreBtn) personalRecordMoreBtn.addEventListener('click', withAuth(function (e) { e.preventDefault(); return openPersonalRecordListModal(); }));

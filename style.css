@@ -1826,10 +1826,15 @@ body[data-theme="dark"] .logo {
     cursor: pointer;
 }
 
-.modal-form select option {
-    background: #1a4d2e;
-    color: #e0e0e0;
+/* 날짜·시간 입력 달력/시계 아이콘: 어두운 배경에서 잘 보이도록 밝게 (전역) */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.85;
+    cursor: pointer;
 }
+
+/* 모달 내 select 옵션은 아래 전역 select option 스타일로 적용 */
 
 .modal-form input:focus,
 .modal-form textarea:focus {
@@ -1888,6 +1893,80 @@ body[data-theme="dark"] .logo {
 .btn-cancel:hover {
     background: rgba(255, 255, 255, 0.15);
     color: #fff;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+}
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.btn-small {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+.btn-scorecard {
+    padding: 6px 10px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.btn-add-line {
+    margin-top: 8px;
+}
+.btn-remove-line {
+    padding: 4px 8px;
+    font-size: 12px;
+    background: rgba(220, 53, 69, 0.5);
+    color: #fff;
+}
+.btn-remove-line:hover {
+    background: rgba(220, 53, 69, 0.8);
+}
+
+/* 경기 기록지 모달 */
+.game-scorecard-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+.game-scorecard-info {
+    margin-bottom: 16px;
+    font-size: 15px;
+    color: var(--text-muted);
+}
+.game-scorecard-section {
+    margin-bottom: 24px;
+}
+.game-scorecard-section h4 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: var(--accent);
+}
+.game-lines-table input[type="number"] {
+    width: 56px;
+    padding: 6px 8px;
+    text-align: center;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-primary);
+}
+.game-lines-table select {
+    min-width: 120px;
+    padding: 6px 8px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-primary);
+}
+/* 전역 콤보박스 옵션: 밝은 배경 + 어두운 글자로 가독성 확보 (모달·필터·리그·경기기록지 등 공통) */
+select option {
+    background: #f5f5f5;
+    color: #1a1a1a;
+}
+body[data-theme="dark"] select option {
+    background: #2d2d2d;
+    color: #e8e8e8;
 }
 
 /* 전체 공지 목록 */

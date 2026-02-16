@@ -186,6 +186,7 @@
                                         <th>구장</th>
                                         <th>성적</th>
                                         <th>간시</th>
+                                        <th>기록지</th>
                                     </tr>
                                 </thead>
                                 <tbody id="seasonScheduleTableBody">
@@ -547,6 +548,68 @@
                     <button type="button" class="btn btn-cancel" data-close="scheduleAddModal">취소</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- 경기 기록지 모달 (경기별 타격/투수 숫자 입력) -->
+    <div id="gameScorecardModal" class="modal" aria-hidden="true">
+        <div class="modal-backdrop" data-close="gameScorecardModal"></div>
+        <div class="modal-content modal-list modal-wide">
+            <div class="modal-header">
+                <h3 id="gameScorecardModalTitle">경기 기록지</h3>
+                <button type="button" class="modal-close" data-close="gameScorecardModal" aria-label="닫기">&times;</button>
+            </div>
+            <div class="modal-body game-scorecard-body">
+                <p class="game-scorecard-info" id="gameScorecardInfo"></p>
+                <div class="game-scorecard-section">
+                    <h4>타격 기록</h4>
+                    <div class="schedule-table-wrap">
+                        <table class="schedule-table personal-table game-lines-table">
+                            <thead>
+                                <tr>
+                                    <th>선수</th>
+                                    <th>타석</th>
+                                    <th>타수</th>
+                                    <th>안타</th>
+                                    <th>타점</th>
+                                    <th>득점</th>
+                                    <th>사사구</th>
+                                    <th>삼진</th>
+                                    <th>도루</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="gameBattingLinesBody"></tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-add-line" id="gameBattingAddRowBtn">+ 타자 추가</button>
+                </div>
+                <div class="game-scorecard-section">
+                    <h4>투수 기록</h4>
+                    <div class="schedule-table-wrap">
+                        <table class="schedule-table personal-table game-lines-table">
+                            <thead>
+                                <tr>
+                                    <th>선수</th>
+                                    <th>이닝</th>
+                                    <th>피안타</th>
+                                    <th>자책점</th>
+                                    <th>승</th>
+                                    <th>패</th>
+                                    <th>세이브</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="gamePitchingLinesBody"></tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-add-line" id="gamePitchingAddRowBtn">+ 투수 추가</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="gameScorecardSaveBtn">저장</button>
+                <button type="button" class="btn btn-cancel" data-close="gameScorecardModal">닫기</button>
+            </div>
         </div>
     </div>
 
