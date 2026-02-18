@@ -5010,6 +5010,143 @@
         if (statsDraw) statsDraw.textContent = String(draws) + '무';
     }
 
+    function exportToExcelHelper(wb, filename) {
+        if (typeof XLSX === 'undefined') {
+            alert('엑셀 라이브러리를 불러올 수 없습니다.');
+            return;
+        }
+        try {
+            XLSX.writeFile(wb, filename + '.xlsx');
+        } catch (e) {
+            alert('엑셀 저장 중 오류가 발생했습니다: ' + (e && e.message ? e.message : String(e)));
+        }
+    }
+
+    async function exportToExcelSchedule() {
+        if (typeof XLSX === 'undefined') { alert('엑셀 라이브러리를 불러올 수 없습니다.'); return; }
+        var leagueId = getSelectedLeague();
+        var raw = filterSchedulesByLeague(await fetchSchedules(true), leagueId);
+        raw.sort(function (a, b) {
+            var da = (a && a.date) ? new Date(String(a.date) + 'T' + String(a.time || '00:00')) : null;
+            var db = (b && b.date) ? new Date(String(b.date) + 'T' + String(b.time || '00:00')) : null;
+            if (!da && !db) return 0;
+            if (!da) return 1;
+            if (!db) return -1;
+            return da.getTime() - db.getTime();
+        });
+        var rows = [['날짜/시간', '대전', '구장', '성적', '스코어']];
+        raw.forEach(function (s) {
+            var dt = formatScheduleDateTime(s.date, s.time);
+            var bo = s.batOrder ? ('[' + String(s.batOrder) + '] ') : '';
+            var lg = (!leagueId && s.leagueId) ? ('[' + (leagueName(s.leagueId) || '') + '] ') : '';
+            var vs = lg + bo + 'YAGUBU vs ' + (s.opponent || '');
+            var loc = s.location || '';
+            var res = scheduleResultDisplay(s);
+            var scoreStr = '';
+            if (s.status === '완료' && s.ourScore !== undefined && s.opponentScore !== undefined) {
+                scoreStr = String(s.ourScore) + ':' + String(s.opponentScore);
+            }
+            rows.push([dt || '', vs, loc, res.label, scoreStr]);
+        });
+        if (rows.length <= 1) {
+            alert('다운로드할 경기 일정이 없습니다.');
+            return;
+        }
+        var wb = XLSX.utils.book_new();
+        var ws = XLSX.utils.aoa_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, '경기일정');
+        exportToExcelHelper(wb, 'YAGUBU_경기일정_' + new Date().toISOString().slice(0, 10));
+    }
+
+    async function exportToExcelTeam() {
+        if (typeof XLSX === 'undefined') { alert('엑셀 라이브러리를 불러올 수 없습니다.'); return; }
+        seedPlayersIfEmpty();
+        var players = (await fetchPlayers(true)).filter(isPlayerForRecords);
+        var leagueId = getSelectedLeague();
+        var recs = recordsForLeague(await fetchPersonalRecords(true), leagueId);
+        var pitcherRecs = pitcherRecordsForLeague(await fetchPitcherRecords(true), leagueId);
+        var schedules = filterSchedulesByLeague(await fetchSchedules(true), leagueId);
+        var summary = computeTeamRecords(players, recs, schedules, pitcherRecs);
+
+        var wb = XLSX.utils.book_new();
+        var ws1 = XLSX.utils.aoa_to_sheet([
+            ['팀 기록실'],
+            ['팀 타율', summary.teamAvg],
+            ['팀 방어율', summary.teamEra],
+            ['최근 전적', summary.recentW + '승 ' + summary.recentL + '패']
+        ]);
+        XLSX.utils.book_append_sheet(wb, ws1, '팀기록실');
+
+        function buildAllRows(metricKey) {
+            var recById = {};
+            (recs || []).forEach(function (r) { if (r && r.playerId) recById[String(r.playerId)] = r; });
+            var items = players.map(function (p) {
+                var r = recById[p.id];
+                var ab = r ? toInt(r.ab) : 0;
+                var h = r ? toInt(r.h) : 0;
+                var rbi = r ? toInt(r.rbi) : 0;
+                var sb = r ? toInt(r.sb) : 0;
+                var avg = r ? (r.avg || calcAvg(h, ab)) : calcAvg(0, 0);
+                var val = (metricKey === 'avg') ? parseFloat(avg) : (metricKey === 'h' ? h : (metricKey === 'rbi' ? rbi : sb));
+                return { jerseyNo: p.jerseyNo || '', name: p.name || '', avg: avg, h: h, rbi: rbi, sb: sb, sortVal: val };
+            });
+            items.sort(function (a, b) {
+                if (b.sortVal !== a.sortVal) return (b.sortVal - a.sortVal);
+                return toInt(a.jerseyNo) - toInt(b.jerseyNo);
+            });
+            return items;
+        }
+
+        var titles = { avg: '타율', h: '안타', rbi: '타점', sb: '도루' };
+        ['avg', 'h', 'rbi', 'sb'].forEach(function (key) {
+            var items = buildAllRows(key);
+            var rows = [['순위', '등번호', '성명', titles[key]]];
+            items.forEach(function (r, idx) {
+                var stat = key === 'avg' ? r.avg : (key === 'h' ? r.h : (key === 'rbi' ? r.rbi : r.sb));
+                rows.push([idx + 1, r.jerseyNo, r.name, stat]);
+            });
+            var ws = XLSX.utils.aoa_to_sheet(rows);
+            XLSX.utils.book_append_sheet(wb, ws, titles[key] + '순위');
+        });
+        exportToExcelHelper(wb, 'YAGUBU_팀기록_' + new Date().toISOString().slice(0, 10));
+    }
+
+    function exportToExcelPersonal() {
+        if (typeof XLSX === 'undefined') { alert('엑셀 라이브러리를 불러올 수 없습니다.'); return; }
+        var table = personalRecordTableBody ? personalRecordTableBody.closest('table') : null;
+        if (!table || !table.querySelector('thead')) {
+            alert('다운로드할 개인 기록이 없습니다.');
+            return;
+        }
+        var trs = table.querySelectorAll('tbody tr');
+        if (!trs || trs.length === 0 || (trs.length === 1 && trs[0].querySelector('.schedule-table-empty'))) {
+            alert('다운로드할 개인 기록이 없습니다.');
+            return;
+        }
+        var ws = XLSX.utils.table_to_sheet(table);
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '개인기록');
+        exportToExcelHelper(wb, 'YAGUBU_개인기록_' + new Date().toISOString().slice(0, 10));
+    }
+
+    function exportToExcelPitcher() {
+        if (typeof XLSX === 'undefined') { alert('엑셀 라이브러리를 불러올 수 없습니다.'); return; }
+        var table = pitcherRecordTableBody ? pitcherRecordTableBody.closest('table') : null;
+        if (!table || !table.querySelector('thead')) {
+            alert('다운로드할 투수 기록이 없습니다.');
+            return;
+        }
+        var trs = table.querySelectorAll('tbody tr');
+        if (!trs || trs.length === 0 || (trs.length === 1 && trs[0].querySelector('.schedule-table-empty'))) {
+            alert('다운로드할 투수 기록이 없습니다.');
+            return;
+        }
+        var ws = XLSX.utils.table_to_sheet(table);
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '투수기록');
+        exportToExcelHelper(wb, 'YAGUBU_투수기록_' + new Date().toISOString().slice(0, 10));
+    }
+
     async function handleScheduleAddSubmit(e) {
         e.preventDefault();
         var leagueId = scheduleLeague && scheduleLeague.value ? normalizeLeagueId(scheduleLeague.value) : (getSelectedLeague() || 'nono');
@@ -5841,6 +5978,8 @@
 
         if (scheduleAddBtn) scheduleAddBtn.addEventListener('click', withManage(openScheduleAddModal));
         if (seasonScheduleAddBtn) seasonScheduleAddBtn.addEventListener('click', withManage(openScheduleAddModal));
+        var seasonScheduleExcelBtn = document.getElementById('seasonScheduleExcelBtn');
+        if (seasonScheduleExcelBtn) seasonScheduleExcelBtn.addEventListener('click', function (e) { e.preventDefault(); exportToExcelSchedule(); });
         if (seasonScheduleMoreBtn) seasonScheduleMoreBtn.addEventListener('click', withAuth(function (e) { e.preventDefault(); return openScheduleListModal(); }));
         if (scheduleStatus) scheduleStatus.addEventListener('change', withManage(switchScheduleResultRow));
         if (scheduleDeleteBtn) scheduleDeleteBtn.addEventListener('click', withManage(function (e) { if (e && e.preventDefault) e.preventDefault(); return handleScheduleDelete(); }));
@@ -5856,11 +5995,17 @@
         if (gameScorecardSaveBtn) gameScorecardSaveBtn.addEventListener('click', withManage(function (e) { if (e && e.preventDefault) e.preventDefault(); return handleGameScorecardSave(); }));
 
         if (personalRecordAddBtn) personalRecordAddBtn.addEventListener('click', withManage(function () { return openPersonalRecordModal(null); }));
+        var personalRecordExcelBtn = document.getElementById('personalRecordExcelBtn');
+        if (personalRecordExcelBtn) personalRecordExcelBtn.addEventListener('click', function (e) { e.preventDefault(); exportToExcelPersonal(); });
         if (personalRecordMoreBtn) personalRecordMoreBtn.addEventListener('click', withAuth(function (e) { e.preventDefault(); return openPersonalRecordListModal(); }));
         if (personalRecordForm) personalRecordForm.addEventListener('submit', withManage(handlePersonalRecordSubmit));
         if (personalRecordDeleteBtn) personalRecordDeleteBtn.addEventListener('click', withManage(function (e) { if (e && e.preventDefault) e.preventDefault(); return handlePersonalRecordDelete(); }));
         if (pitcherRecordAddBtn) pitcherRecordAddBtn.addEventListener('click', withManage(function () { return openPitcherRecordModal(null); }));
+        var pitcherRecordExcelBtn = document.getElementById('pitcherRecordExcelBtn');
+        if (pitcherRecordExcelBtn) pitcherRecordExcelBtn.addEventListener('click', function (e) { e.preventDefault(); exportToExcelPitcher(); });
         if (pitcherRecordMoreBtn) pitcherRecordMoreBtn.addEventListener('click', withAuth(function (e) { e.preventDefault(); return openPitcherRecordListModal(); }));
+        var teamRecordsExcelBtn = document.getElementById('teamRecordsExcelBtn');
+        if (teamRecordsExcelBtn) teamRecordsExcelBtn.addEventListener('click', function (e) { e.preventDefault(); exportToExcelTeam(); });
         if (pitcherRecordForm) pitcherRecordForm.addEventListener('submit', withManage(handlePitcherRecordSubmit));
         if (pitcherRecordDeleteBtn) pitcherRecordDeleteBtn.addEventListener('click', withManage(function (e) { if (e && e.preventDefault) e.preventDefault(); return handlePitcherRecordDelete(); }));
         [pitchIp, pitchEr].forEach(function (el) {

@@ -175,6 +175,7 @@
                     <div class="tab-panel active" id="tab-schedule">
                         <div class="schedule-tab-toolbar">
                             <button type="button" class="btn-notice-add" id="seasonScheduleAddBtn" title="경기 일정·승패 등록">✏️</button>
+                            <button type="button" class="btn-excel-download" id="seasonScheduleExcelBtn" title="엑셀 다운로드">📥 엑셀</button>
                             <a href="#" class="more-link" id="seasonScheduleMoreBtn">MORE</a>
                         </div>
                         <div class="schedule-table schedule-table-5">
@@ -196,6 +197,9 @@
                         </div>
                     </div>
                     <div class="tab-panel" id="tab-team">
+                        <div class="tab-toolbar team-records-toolbar">
+                            <button type="button" class="btn-excel-download" id="teamRecordsExcelBtn" title="엑셀 다운로드">📥 엑셀</button>
+                        </div>
                         <div class="team-records-wrap" id="teamRecordsWrap">
                             <div class="team-records-left">
                                 <div class="team-records-card">
@@ -257,6 +261,7 @@
                     <div class="tab-panel" id="tab-personal">
                         <div class="tab-toolbar">
                             <button type="button" class="btn-notice-add" id="personalRecordAddBtn" title="개인기록 등록">✏️</button>
+                            <button type="button" class="btn-excel-download" id="personalRecordExcelBtn" title="엑셀 다운로드">📥 엑셀</button>
                             <a href="#" class="more-link" id="personalRecordMoreBtn">MORE</a>
                         </div>
                         <div class="schedule-table personal-table">
@@ -285,6 +290,7 @@
                     <div class="tab-panel" id="tab-pitcher">
                         <div class="tab-toolbar">
                             <button type="button" class="btn-notice-add" id="pitcherRecordAddBtn" title="투수기록 등록">✏️</button>
+                            <button type="button" class="btn-excel-download" id="pitcherRecordExcelBtn" title="엑셀 다운로드">📥 엑셀</button>
                             <a href="#" class="more-link" id="pitcherRecordMoreBtn">MORE</a>
                         </div>
                         <div class="schedule-table personal-table">
@@ -1458,6 +1464,8 @@
         </div>
     </div>
 
+    <!-- SheetJS (엑셀 다운로드용) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
     <!-- Supabase (공유 저장용). 키를 설정하면 Supabase 사용, 아니면 localStorage 사용 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
