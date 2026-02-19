@@ -2217,3 +2217,49 @@ body[data-theme="dark"] .nav-link {
 body[data-theme="dark"] .nav-link:hover {
     color: var(--accent);
 }
+
+/* ===== 전역 로딩 오버레이 (모래시계/스피너) ===== */
+.global-loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+.global-loading-overlay.active {
+    display: flex;
+}
+.global-loading-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+.global-loading-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 24px 32px;
+    background: var(--card-bg, rgba(30, 30, 30, 0.95));
+    border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.1));
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+.global-loading-spinner {
+    width: 44px;
+    height: 44px;
+    border: 3px solid rgba(255, 215, 0, 0.25);
+    border-top-color: var(--accent, #ffd700);
+    border-radius: 50%;
+    animation: global-loading-spin 0.8s linear infinite;
+}
+.global-loading-text {
+    font-size: 14px;
+    color: var(--text-secondary, #aaa);
+}
+@keyframes global-loading-spin {
+    to { transform: rotate(360deg); }
+}

@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 전역 로딩 오버레이 (데이터 불러오기·엑셀 다운로드 시 표시) -->
+    <div id="globalLoadingOverlay" class="global-loading-overlay" aria-hidden="true" aria-live="polite">
+        <div class="global-loading-backdrop"></div>
+        <div class="global-loading-content">
+            <div class="global-loading-spinner" aria-hidden="true"></div>
+            <span class="global-loading-text">로딩 중...</span>
+        </div>
+    </div>
+
     <script>
     (function(){try{var t=localStorage.getItem('yagubu_theme');if(t==='dark')document.body.setAttribute('data-theme','dark');else if(t==='light')document.body.setAttribute('data-theme','light');else if(typeof window.matchMedia!=='undefined'&&window.matchMedia('(prefers-color-scheme: dark)').matches)document.body.setAttribute('data-theme','dark');else document.body.setAttribute('data-theme','light');}catch(e){document.body.setAttribute('data-theme','light');}})();
     </script>
