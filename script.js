@@ -4738,15 +4738,15 @@
             '<span class="scorecard-cell-label">타순</span><input type="number" class="game-line-order" min="1" max="99" title="타순"' + orderAttr + ' />' +
             '<span class="scorecard-cell-label">포지션</span><span class="game-line-pos" title="포지션">' + (pos ? escapeHtml(pos) : '—') + '</span>' +
             '<select class="game-line-player-select" title="선수">' + playerSelectOptions(players, pid) + '</select></td>' +
-            '<td><input type="text" class="game-line-inning-1" value="' + i1 + '" placeholder="예: 삼진" title="1회 타석 결과" /></td>' +
-            '<td><input type="text" class="game-line-inning-2" value="' + i2 + '" placeholder="예: 삼진" title="2회 타석 결과" /></td>' +
-            '<td><input type="text" class="game-line-inning-3" value="' + i3 + '" placeholder="예: 삼진" title="3회 타석 결과" /></td>' +
-            '<td><input type="text" class="game-line-inning-4" value="' + i4 + '" placeholder="예: 삼진" title="4회 타석 결과" /></td>' +
-            '<td><input type="text" class="game-line-inning-5" value="' + i5 + '" placeholder="예: 삼진" title="5회 타석 결과" /></td>' +
-            '<td><input type="text" class="game-line-inning-6" value="' + i6 + '" placeholder="예: 삼진" title="6회 타석 결과" /></td>' +
-            '<td><input type="text" class="game-line-inning-7" value="' + i7 + '" placeholder="예: 삼진" title="7회 타석 결과" /></td>' +
-            '<td><input type="text" class="game-line-inning-8" value="' + i8 + '" placeholder="예: 삼진" title="8회 타석 결과" /></td>' +
-            '<td><input type="text" class="game-line-inning-9" value="' + i9 + '" placeholder="예: 삼진" title="9회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-1" value="' + i1 + '" title="1회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-2" value="' + i2 + '" title="2회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-3" value="' + i3 + '" title="3회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-4" value="' + i4 + '" title="4회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-5" value="' + i5 + '" title="5회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-6" value="' + i6 + '" title="6회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-7" value="' + i7 + '" title="7회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-8" value="' + i8 + '" title="8회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-9" value="' + i9 + '" title="9회 타석 결과" /></td>' +
             '<td><input type="number" class="game-line-ab" min="0" value="' + (line.ab != null ? line.ab : 0) + '" title="타수" /></td>' +
             '<td><input type="number" class="game-line-h" min="0" value="' + (line.h != null ? line.h : 0) + '" title="안타" /></td>' +
             '<td><input type="number" class="game-line-rbi" min="0" value="' + (line.rbi != null ? line.rbi : 0) + '" title="타점" /></td>' +

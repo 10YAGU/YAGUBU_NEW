@@ -1712,6 +1712,15 @@ body[data-theme="dark"] .logo {
     max-width: 1100px;
 }
 
+/* 경기 기록지 전용: 화면을 넓게 사용해 가독성 향상 */
+.modal-content.modal-list.modal-wide.modal-scorecard {
+    max-width: min(96vw, 1600px);
+    width: min(96vw, 1600px);
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+}
+
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -1964,21 +1973,55 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 /* 경기 기록지 모달 */
 .game-scorecard-body {
-    max-height: 70vh;
+    max-height: 78vh;
     overflow-y: auto;
+    overflow-x: auto;
+    padding: 24px;
+    font-size: 15px;
+}
+#gameScorecardModal .modal-header h3 {
+    font-size: 1.25rem;
 }
 .game-scorecard-info {
-    margin-bottom: 16px;
-    font-size: 15px;
+    margin-bottom: 20px;
+    font-size: 1rem;
     color: var(--text-muted);
 }
 .game-scorecard-section {
-    margin-bottom: 24px;
+    margin-bottom: 28px;
 }
 .game-scorecard-section h4 {
-    margin-bottom: 10px;
-    font-size: 1rem;
+    margin-bottom: 12px;
+    font-size: 1.05rem;
     color: var(--accent);
+}
+.game-scorecard-body .game-lines-table input[type="number"] {
+    width: 60px;
+    min-width: 52px;
+    padding: 8px 10px;
+    font-size: 15px;
+    text-align: center;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-primary);
+}
+.game-scorecard-body .game-lines-table input[type="text"] {
+    padding: 8px 10px;
+    font-size: 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-primary);
+}
+.game-scorecard-body .game-lines-table select {
+    min-width: 130px;
+    padding: 8px 10px;
+    font-size: 15px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-primary);
 }
 .game-lines-table input[type="number"] {
     width: 56px;
@@ -2001,6 +2044,14 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* 경기 기록지 새 양식: 타격(이닝별)·투수 상세 */
 .schedule-table-wrap-scorecard {
     overflow-x: auto;
+}
+.game-scorecard-body .schedule-table th {
+    padding: 12px 10px;
+    font-size: 14px;
+}
+.game-scorecard-body .schedule-table td {
+    padding: 10px;
+    font-size: 15px;
 }
 .game-batting-table .th-player,
 .game-pitching-table .th-player {
@@ -2050,10 +2101,24 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .game-batting-table input.game-line-inning-7,
 .game-batting-table input.game-line-inning-8,
 .game-batting-table input.game-line-inning-9 {
-    width: 64px;
-    max-width: 80px;
-    font-size: 13px;
-    padding: 4px 6px;
+    width: 72px;
+    max-width: 90px;
+    font-size: 14px;
+    padding: 6px 8px;
+}
+.game-scorecard-body .game-batting-table input.game-line-inning-1,
+.game-scorecard-body .game-batting-table input.game-line-inning-2,
+.game-scorecard-body .game-batting-table input.game-line-inning-3,
+.game-scorecard-body .game-batting-table input.game-line-inning-4,
+.game-scorecard-body .game-batting-table input.game-line-inning-5,
+.game-scorecard-body .game-batting-table input.game-line-inning-6,
+.game-scorecard-body .game-batting-table input.game-line-inning-7,
+.game-scorecard-body .game-batting-table input.game-line-inning-8,
+.game-scorecard-body .game-batting-table input.game-line-inning-9 {
+    width: 76px;
+    min-width: 70px;
+    font-size: 15px;
+    padding: 8px 10px;
 }
 /* 타율·방어율: 자동 계산 표시(입력란 아님) */
 .game-lines-table .game-line-avg,
