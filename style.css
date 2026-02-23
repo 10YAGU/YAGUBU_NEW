@@ -2054,24 +2054,25 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     font-size: 15px;
 }
 .game-batting-table .th-player {
-    min-width: 180px;
+    min-width: 220px;
 }
 .game-pitching-table .th-player {
-    min-width: 180px;
+    min-width: 220px;
 }
 .game-batting-table .td-player,
 .game-pitching-table .td-player {
     white-space: nowrap;
 }
-/* 선수(번호 성명) 콤보와 1회 입력란 겹침 방지 */
+/* 선수 콤보와 옆 칸 겹침 방지 + 성명 전체 표시 */
 .game-batting-table .td-player {
     padding-right: 20px;
-    min-width: 180px;
+    min-width: 220px;
 }
 .game-batting-table .td-player .game-line-player-select {
-    min-width: 110px;
-    padding-right: 28px;
+    min-width: 180px;
+    width: 100%;
     max-width: 100%;
+    padding-right: 28px;
     box-sizing: border-box;
     vertical-align: middle;
 }
@@ -2156,15 +2157,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     min-width: 52px;
     text-align: center;
 }
-/* 투수 기록: 선수 콤보와 결과 입력란 겹침 방지 + 결과·승·패·세·시즌 칸 최소 너비 */
+/* 투수 기록: 선수 콤보와 결과 입력란 겹침 방지 + 성명 전체 표시 */
 .game-pitching-table .td-player {
-    min-width: 180px;
+    min-width: 220px;
     padding-right: 20px;
 }
 .game-pitching-table .td-player .game-line-player-select {
-    min-width: 120px;
-    padding-right: 28px;
+    min-width: 180px;
+    width: 100%;
     max-width: 100%;
+    padding-right: 28px;
     box-sizing: border-box;
 }
 .game-pitching-table .td-player .scorecard-cell-label {
