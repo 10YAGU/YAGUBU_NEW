@@ -4732,12 +4732,11 @@
         var i7 = escapeHtml((line.inning_7 || '').trim());
         var i8 = escapeHtml((line.inning_8 || '').trim());
         var i9 = escapeHtml((line.inning_9 || '').trim());
-        var orderAttr = (orderVal !== '' && orderVal != null) ? ' value="' + escapeHtml(String(orderVal)) + '"' : ' placeholder="타순"';
+        var orderValStr = (orderVal !== '' && orderVal != null) ? escapeHtml(String(orderVal)) : '';
         return '<tr class="game-line-row" data-row-id="' + escapeHtml(rowId) + '">' +
             '<td class="td-player">' +
-            '<span class="scorecard-cell-label">타순</span><input type="number" class="game-line-order" min="1" max="99" title="타순"' + orderAttr + ' />' +
-            '<span class="scorecard-cell-label">포지션</span><span class="game-line-pos" title="포지션">' + (pos ? escapeHtml(pos) : '—') + '</span>' +
-            '<select class="game-line-player-select" title="선수">' + playerSelectOptions(players, pid) + '</select></td>' +
+            '<input type="hidden" class="game-line-order" value="' + orderValStr + '" />' +
+            '<select class="game-line-player-select" title="선수(번호 성명)">' + playerSelectOptions(players, pid) + '</select></td>' +
             '<td><input type="text" class="game-line-inning-1" value="' + i1 + '" title="1회 타석 결과" /></td>' +
             '<td><input type="text" class="game-line-inning-2" value="' + i2 + '" title="2회 타석 결과" /></td>' +
             '<td><input type="text" class="game-line-inning-3" value="' + i3 + '" title="3회 타석 결과" /></td>' +
@@ -4770,7 +4769,7 @@
         var era = gamePitchingEra(line.ip, line.er);
         var seasonEraVal = line.season_era != null && line.season_era !== '' ? String(line.season_era) : '';
         return '<tr class="game-line-row" data-row-id="' + escapeHtml(rowId) + '">' +
-            '<td class="td-player"><span class="scorecard-cell-label">선수</span><select class="game-line-player-select" title="선수">' + playerSelectOptions(players, pid) + '</select></td>' +
+            '<td class="td-player"><select class="game-line-player-select" title="선수(번호 성명)">' + playerSelectOptions(players, pid) + '</select></td>' +
             '<td class="td-result"><input type="text" class="game-line-result" value="' + escapeHtml((line.result || '').trim()) + '" placeholder="승/패" title="결과(예: 승)" /></td>' +
             '<td class="td-w"><input type="number" class="game-line-w" min="0" value="' + (line.w != null ? line.w : 0) + '" title="승" /></td>' +
             '<td class="td-l"><input type="number" class="game-line-l" min="0" value="' + (line.l != null ? line.l : 0) + '" title="패" /></td>' +
