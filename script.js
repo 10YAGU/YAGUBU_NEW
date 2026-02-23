@@ -176,6 +176,7 @@
     var gamePitchingAddRowBtn = document.getElementById('gamePitchingAddRowBtn');
     var gameScorecardSaveBtn = document.getElementById('gameScorecardSaveBtn');
     var currentScorecardScheduleId = null;
+    var currentScorecardPlayers = [];
     var statsWinRate = document.getElementById('statsWinRate');
     var statsWin = document.getElementById('statsWin');
     var statsLoss = document.getElementById('statsLoss');
@@ -876,15 +877,25 @@
                 id: r.id,
                 scheduleId: r.schedule_id,
                 playerId: r.player_id,
-                pa: r.pa,
+                pa: r.pa != null ? r.pa : 0,
                 ab: r.ab,
                 h: r.h,
                 rbi: r.rbi,
                 r: r.r,
-                bb: r.bb,
-                so: r.so,
+                bb: r.bb != null ? r.bb : 0,
+                so: r.so != null ? r.so : 0,
                 sb: r.sb,
                 battingOrder: r.batting_order != null ? r.batting_order : null,
+                inning_1: r.inning_1 || '',
+                inning_2: r.inning_2 || '',
+                inning_3: r.inning_3 || '',
+                inning_4: r.inning_4 || '',
+                inning_5: r.inning_5 || '',
+                inning_6: r.inning_6 || '',
+                inning_7: r.inning_7 || '',
+                inning_8: r.inning_8 || '',
+                inning_9: r.inning_9 || '',
+                season_avg: r.season_avg != null ? parseFloat(String(r.season_avg)) : null,
                 createdAt: r.created_at ? sbMs(r.created_at) : Date.now()
             };
         });
@@ -909,6 +920,20 @@
                 w: r.w,
                 l: r.l,
                 sv: r.sv,
+                result: r.result || '',
+                bf: r.bf != null ? r.bf : 0,
+                ab: r.ab != null ? r.ab : 0,
+                hr: r.hr != null ? r.hr : 0,
+                sh: r.sh != null ? r.sh : 0,
+                sf: r.sf != null ? r.sf : 0,
+                bb: r.bb != null ? r.bb : 0,
+                hbp: r.hbp != null ? r.hbp : 0,
+                so: r.so != null ? r.so : 0,
+                wp: r.wp != null ? r.wp : 0,
+                balk: r.balk != null ? r.balk : 0,
+                r: r.r != null ? r.r : 0,
+                np: r.np != null ? r.np : 0,
+                season_era: r.season_era != null ? parseFloat(String(r.season_era)) : null,
                 createdAt: r.created_at ? sbMs(r.created_at) : Date.now()
             };
         });
@@ -932,6 +957,16 @@
                     so: toInt(ln.so),
                     sb: toInt(ln.sb),
                     battingOrder: ln.battingOrder != null && ln.battingOrder !== '' ? parseInt(String(ln.battingOrder), 10) : null,
+                    inning_1: ln.inning_1 || '',
+                    inning_2: ln.inning_2 || '',
+                    inning_3: ln.inning_3 || '',
+                    inning_4: ln.inning_4 || '',
+                    inning_5: ln.inning_5 || '',
+                    inning_6: ln.inning_6 || '',
+                    inning_7: ln.inning_7 || '',
+                    inning_8: ln.inning_8 || '',
+                    inning_9: ln.inning_9 || '',
+                    season_avg: ln.season_avg != null && ln.season_avg !== '' ? parseFloat(String(ln.season_avg)) : null,
                     createdAt: Date.now()
                 });
             });
@@ -956,6 +991,16 @@
                 so: toInt(ln.so),
                 sb: toInt(ln.sb),
                 batting_order: ln.battingOrder != null && ln.battingOrder !== '' ? parseInt(String(ln.battingOrder), 10) : null,
+                inning_1: (ln.inning_1 || '').trim(),
+                inning_2: (ln.inning_2 || '').trim(),
+                inning_3: (ln.inning_3 || '').trim(),
+                inning_4: (ln.inning_4 || '').trim(),
+                inning_5: (ln.inning_5 || '').trim(),
+                inning_6: (ln.inning_6 || '').trim(),
+                inning_7: (ln.inning_7 || '').trim(),
+                inning_8: (ln.inning_8 || '').trim(),
+                inning_9: (ln.inning_9 || '').trim(),
+                season_avg: ln.season_avg != null && ln.season_avg !== '' ? parseFloat(String(ln.season_avg)) : null,
                 created_at: new Date(ln.createdAt || Date.now()).toISOString()
             };
         });
@@ -978,6 +1023,20 @@
                     w: toInt(ln.w),
                     l: toInt(ln.l),
                     sv: toInt(ln.sv),
+                    result: ln.result || '',
+                    bf: toInt(ln.bf),
+                    ab: toInt(ln.ab),
+                    hr: toInt(ln.hr),
+                    sh: toInt(ln.sh),
+                    sf: toInt(ln.sf),
+                    bb: toInt(ln.bb),
+                    hbp: toInt(ln.hbp),
+                    so: toInt(ln.so),
+                    wp: toInt(ln.wp),
+                    balk: toInt(ln.balk),
+                    r: toInt(ln.r),
+                    np: toInt(ln.np),
+                    season_era: ln.season_era != null && ln.season_era !== '' ? parseFloat(String(ln.season_era)) : null,
                     createdAt: Date.now()
                 });
             });
@@ -999,6 +1058,20 @@
                 w: toInt(ln.w),
                 l: toInt(ln.l),
                 sv: toInt(ln.sv),
+                result: (ln.result || '').trim(),
+                bf: toInt(ln.bf),
+                ab: toInt(ln.ab),
+                hr: toInt(ln.hr),
+                sh: toInt(ln.sh),
+                sf: toInt(ln.sf),
+                bb: toInt(ln.bb),
+                hbp: toInt(ln.hbp),
+                so: toInt(ln.so),
+                wp: toInt(ln.wp),
+                balk: toInt(ln.balk),
+                r: toInt(ln.r),
+                np: toInt(ln.np),
+                season_era: ln.season_era != null && ln.season_era !== '' ? parseFloat(String(ln.season_era)) : null,
                 created_at: new Date(ln.createdAt || Date.now()).toISOString()
             };
         });
@@ -4635,35 +4708,88 @@
         return '<option value="">선수 선택</option>' + opts.join('');
     }
 
+    function gameBattingAvg(ab, h) {
+        var a = parseInt(ab, 10) || 0;
+        var b = parseInt(h, 10) || 0;
+        return a > 0 ? (b / a).toFixed(3) : '0.000';
+    }
+
     function makeGameBattingRow(players, line) {
         line = line || {};
         var pid = line.playerId || '';
         var rowId = line.id || 'gbl_row_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        var p = players.filter(function (x) { return x.id === pid; })[0];
+        var pos = p ? (p.primaryPos || '') : '';
+        var orderVal = line.battingOrder != null && line.battingOrder !== '' ? line.battingOrder : '';
+        var avg = gameBattingAvg(line.ab, line.h);
+        var seasonVal = line.season_avg != null && line.season_avg !== '' ? String(line.season_avg) : '';
+        var i1 = escapeHtml((line.inning_1 || '').trim());
+        var i2 = escapeHtml((line.inning_2 || '').trim());
+        var i3 = escapeHtml((line.inning_3 || '').trim());
+        var i4 = escapeHtml((line.inning_4 || '').trim());
+        var i5 = escapeHtml((line.inning_5 || '').trim());
+        var i6 = escapeHtml((line.inning_6 || '').trim());
+        var i7 = escapeHtml((line.inning_7 || '').trim());
+        var i8 = escapeHtml((line.inning_8 || '').trim());
+        var i9 = escapeHtml((line.inning_9 || '').trim());
         return '<tr class="game-line-row" data-row-id="' + escapeHtml(rowId) + '">' +
-            '<td><select class="game-line-player-select">' + playerSelectOptions(players, pid) + '</select></td>' +
-            '<td><input type="number" class="game-line-pa" min="0" value="' + (line.pa != null ? line.pa : 0) + '" /></td>' +
+            '<td class="td-player"><input type="number" class="game-line-order" min="1" max="99" placeholder="타순" value="' + escapeHtml(String(orderVal)) + '" title="타순" />' +
+            '<span class="game-line-pos" title="포지션">' + escapeHtml(pos) + '</span>' +
+            '<select class="game-line-player-select">' + playerSelectOptions(players, pid) + '</select></td>' +
+            '<td><input type="text" class="game-line-inning-1" value="' + i1 + '" placeholder="1회" title="1회" /></td>' +
+            '<td><input type="text" class="game-line-inning-2" value="' + i2 + '" placeholder="2회" title="2회" /></td>' +
+            '<td><input type="text" class="game-line-inning-3" value="' + i3 + '" placeholder="3회" title="3회" /></td>' +
+            '<td><input type="text" class="game-line-inning-4" value="' + i4 + '" placeholder="4회" title="4회" /></td>' +
+            '<td><input type="text" class="game-line-inning-5" value="' + i5 + '" placeholder="5회" title="5회" /></td>' +
+            '<td><input type="text" class="game-line-inning-6" value="' + i6 + '" placeholder="6회" title="6회" /></td>' +
+            '<td><input type="text" class="game-line-inning-7" value="' + i7 + '" placeholder="7회" title="7회" /></td>' +
+            '<td><input type="text" class="game-line-inning-8" value="' + i8 + '" placeholder="8회" title="8회" /></td>' +
+            '<td><input type="text" class="game-line-inning-9" value="' + i9 + '" placeholder="9회" title="9회" /></td>' +
             '<td><input type="number" class="game-line-ab" min="0" value="' + (line.ab != null ? line.ab : 0) + '" /></td>' +
             '<td><input type="number" class="game-line-h" min="0" value="' + (line.h != null ? line.h : 0) + '" /></td>' +
             '<td><input type="number" class="game-line-rbi" min="0" value="' + (line.rbi != null ? line.rbi : 0) + '" /></td>' +
             '<td><input type="number" class="game-line-r" min="0" value="' + (line.r != null ? line.r : 0) + '" /></td>' +
-            '<td><input type="number" class="game-line-bb" min="0" value="' + (line.bb != null ? line.bb : 0) + '" /></td>' +
-            '<td><input type="number" class="game-line-so" min="0" value="' + (line.so != null ? line.so : 0) + '" /></td>' +
             '<td><input type="number" class="game-line-sb" min="0" value="' + (line.sb != null ? line.sb : 0) + '" /></td>' +
+            '<td><span class="game-line-avg" data-ab="' + (line.ab != null ? line.ab : 0) + '" data-h="' + (line.h != null ? line.h : 0) + '">' + avg + '</span></td>' +
+            '<td><input type="text" class="game-line-season-avg" value="' + escapeHtml(seasonVal) + '" placeholder="시즌" title="시즌 타율" /></td>' +
             '<td><button type="button" class="btn btn-small btn-remove-line" title="행 삭제">삭제</button></td></tr>';
+    }
+
+    function gamePitchingEra(ip, er) {
+        var i = parseFloat(String(ip || '0')) || 0;
+        var e = parseInt(er, 10) || 0;
+        return i > 0 ? ((e * 9) / i).toFixed(2) : (e > 0 ? '—' : '0.00');
     }
 
     function makeGamePitchingRow(players, line) {
         line = line || {};
         var pid = line.playerId || '';
         var rowId = line.id || 'gpl_row_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        var era = gamePitchingEra(line.ip, line.er);
+        var seasonEraVal = line.season_era != null && line.season_era !== '' ? String(line.season_era) : '';
         return '<tr class="game-line-row" data-row-id="' + escapeHtml(rowId) + '">' +
-            '<td><select class="game-line-player-select">' + playerSelectOptions(players, pid) + '</select></td>' +
-            '<td><input type="number" class="game-line-ip" min="0" step="0.1" value="' + (line.ip != null && line.ip !== '' ? line.ip : 0) + '" placeholder="5.1" /></td>' +
-            '<td><input type="number" class="game-line-h" min="0" value="' + (line.h != null ? line.h : 0) + '" /></td>' +
-            '<td><input type="number" class="game-line-er" min="0" value="' + (line.er != null ? line.er : 0) + '" /></td>' +
-            '<td><input type="number" class="game-line-w" min="0" value="' + (line.w != null ? line.w : 0) + '" /></td>' +
-            '<td><input type="number" class="game-line-l" min="0" value="' + (line.l != null ? line.l : 0) + '" /></td>' +
-            '<td><input type="number" class="game-line-sv" min="0" value="' + (line.sv != null ? line.sv : 0) + '" /></td>' +
+            '<td class="td-player"><select class="game-line-player-select">' + playerSelectOptions(players, pid) + '</select></td>' +
+            '<td><input type="text" class="game-line-result" value="' + escapeHtml((line.result || '').trim()) + '" placeholder="승/패" title="결과" /></td>' +
+            '<td><input type="number" class="game-line-w" min="0" value="' + (line.w != null ? line.w : 0) + '" title="승" /></td>' +
+            '<td><input type="number" class="game-line-l" min="0" value="' + (line.l != null ? line.l : 0) + '" title="패" /></td>' +
+            '<td><input type="number" class="game-line-sv" min="0" value="' + (line.sv != null ? line.sv : 0) + '" title="세이브" /></td>' +
+            '<td><input type="number" class="game-line-ip" min="0" step="0.1" value="' + (line.ip != null && line.ip !== '' ? line.ip : 0) + '" placeholder="5.1" title="이닝" /></td>' +
+            '<td><input type="number" class="game-line-bf" min="0" value="' + (line.bf != null ? line.bf : 0) + '" title="타자" /></td>' +
+            '<td><input type="number" class="game-line-ab" min="0" value="' + (line.ab != null ? line.ab : 0) + '" title="타수" /></td>' +
+            '<td><input type="number" class="game-line-h" min="0" value="' + (line.h != null ? line.h : 0) + '" title="피안타" /></td>' +
+            '<td><input type="number" class="game-line-hr" min="0" value="' + (line.hr != null ? line.hr : 0) + '" title="피홈런" /></td>' +
+            '<td><input type="number" class="game-line-sh" min="0" value="' + (line.sh != null ? line.sh : 0) + '" title="희타" /></td>' +
+            '<td><input type="number" class="game-line-sf" min="0" value="' + (line.sf != null ? line.sf : 0) + '" title="희비" /></td>' +
+            '<td><input type="number" class="game-line-bb" min="0" value="' + (line.bb != null ? line.bb : 0) + '" title="볼넷" /></td>' +
+            '<td><input type="number" class="game-line-hbp" min="0" value="' + (line.hbp != null ? line.hbp : 0) + '" title="사구" /></td>' +
+            '<td><input type="number" class="game-line-so" min="0" value="' + (line.so != null ? line.so : 0) + '" title="삼진" /></td>' +
+            '<td><input type="number" class="game-line-wp" min="0" value="' + (line.wp != null ? line.wp : 0) + '" title="폭투" /></td>' +
+            '<td><input type="number" class="game-line-balk" min="0" value="' + (line.balk != null ? line.balk : 0) + '" title="보크" /></td>' +
+            '<td><input type="number" class="game-line-r" min="0" value="' + (line.r != null ? line.r : 0) + '" title="실점" /></td>' +
+            '<td><input type="number" class="game-line-er" min="0" value="' + (line.er != null ? line.er : 0) + '" title="자책점" /></td>' +
+            '<td><input type="number" class="game-line-np" min="0" value="' + (line.np != null ? line.np : 0) + '" title="투구수" /></td>' +
+            '<td><span class="game-line-era" data-ip="' + (line.ip != null ? line.ip : 0) + '" data-er="' + (line.er != null ? line.er : 0) + '">' + era + '</span></td>' +
+            '<td><input type="text" class="game-line-season-era" value="' + escapeHtml(seasonEraVal) + '" placeholder="시즌" title="시즌 방어율" /></td>' +
             '<td><button type="button" class="btn btn-small btn-remove-line" title="행 삭제">삭제</button></td></tr>';
     }
 
@@ -4703,6 +4829,7 @@
         } catch (e) {
             console.error(e);
         }
+        currentScorecardPlayers = players;
         var battingLines = [];
         var pitchingLines = [];
         try {
@@ -4750,6 +4877,19 @@
         if (gameScorecardSaveBtn) gameScorecardSaveBtn.disabled = false;
     }
 
+    function readIntFromEl(tr, sel) {
+        var el = tr.querySelector(sel);
+        return el && el.value !== undefined && el.value !== '' ? (parseInt(el.value, 10) || 0) : 0;
+    }
+    function readFloatFromEl(tr, sel) {
+        var el = tr.querySelector(sel);
+        return el && el.value !== undefined && el.value !== '' ? (parseFloat(el.value) || 0) : 0;
+    }
+    function readStrFromEl(tr, sel) {
+        var el = tr.querySelector(sel);
+        return el && el.value !== undefined ? String(el.value).trim() : '';
+    }
+
     async function handleGameScorecardSave() {
         var scheduleId = currentScorecardScheduleId;
         if (!scheduleId) return;
@@ -4759,16 +4899,34 @@
                 var sel = tr.querySelector('.game-line-player-select');
                 var playerId = sel && sel.value ? sel.value.trim() : '';
                 if (!playerId) return;
+                var orderEl = tr.querySelector('.game-line-order');
+                var orderVal = orderEl && orderEl.value !== undefined && orderEl.value !== '' ? parseInt(String(orderEl.value), 10) : null;
                 battingLines.push({
                     playerId: playerId,
-                    pa: parseInt(tr.querySelector('.game-line-pa') && tr.querySelector('.game-line-pa').value ? tr.querySelector('.game-line-pa').value : 0, 10) || 0,
-                    ab: parseInt(tr.querySelector('.game-line-ab') && tr.querySelector('.game-line-ab').value ? tr.querySelector('.game-line-ab').value : 0, 10) || 0,
-                    h: parseInt(tr.querySelector('.game-line-h') && tr.querySelector('.game-line-h').value ? tr.querySelector('.game-line-h').value : 0, 10) || 0,
-                    rbi: parseInt(tr.querySelector('.game-line-rbi') && tr.querySelector('.game-line-rbi').value ? tr.querySelector('.game-line-rbi').value : 0, 10) || 0,
-                    r: parseInt(tr.querySelector('.game-line-r') && tr.querySelector('.game-line-r').value ? tr.querySelector('.game-line-r').value : 0, 10) || 0,
-                    bb: parseInt(tr.querySelector('.game-line-bb') && tr.querySelector('.game-line-bb').value ? tr.querySelector('.game-line-bb').value : 0, 10) || 0,
-                    so: parseInt(tr.querySelector('.game-line-so') && tr.querySelector('.game-line-so').value ? tr.querySelector('.game-line-so').value : 0, 10) || 0,
-                    sb: parseInt(tr.querySelector('.game-line-sb') && tr.querySelector('.game-line-sb').value ? tr.querySelector('.game-line-sb').value : 0, 10) || 0
+                    pa: 0,
+                    ab: readIntFromEl(tr, '.game-line-ab'),
+                    h: readIntFromEl(tr, '.game-line-h'),
+                    rbi: readIntFromEl(tr, '.game-line-rbi'),
+                    r: readIntFromEl(tr, '.game-line-r'),
+                    bb: 0,
+                    so: 0,
+                    sb: readIntFromEl(tr, '.game-line-sb'),
+                    battingOrder: (orderVal != null && !isNaN(orderVal)) ? orderVal : null,
+                    inning_1: readStrFromEl(tr, '.game-line-inning-1'),
+                    inning_2: readStrFromEl(tr, '.game-line-inning-2'),
+                    inning_3: readStrFromEl(tr, '.game-line-inning-3'),
+                    inning_4: readStrFromEl(tr, '.game-line-inning-4'),
+                    inning_5: readStrFromEl(tr, '.game-line-inning-5'),
+                    inning_6: readStrFromEl(tr, '.game-line-inning-6'),
+                    inning_7: readStrFromEl(tr, '.game-line-inning-7'),
+                    inning_8: readStrFromEl(tr, '.game-line-inning-8'),
+                    inning_9: readStrFromEl(tr, '.game-line-inning-9'),
+                    season_avg: (function () {
+                        var el = tr.querySelector('.game-line-season-avg');
+                        if (!el || el.value === undefined || el.value === '') return null;
+                        var v = parseFloat(el.value);
+                        return isNaN(v) ? null : v;
+                    })()
                 });
             });
         }
@@ -4778,16 +4936,34 @@
                 var sel = tr.querySelector('.game-line-player-select');
                 var playerId = sel && sel.value ? sel.value.trim() : '';
                 if (!playerId) return;
-                var ipEl = tr.querySelector('.game-line-ip');
-                var ipVal = ipEl && ipEl.value !== undefined && ipEl.value !== '' ? parseFloat(ipEl.value) : 0;
+                var ipVal = readFloatFromEl(tr, '.game-line-ip');
                 pitchingLines.push({
                     playerId: playerId,
                     ip: isNaN(ipVal) ? 0 : ipVal,
-                    h: parseInt(tr.querySelector('.game-line-h') && tr.querySelector('.game-line-h').value ? tr.querySelector('.game-line-h').value : 0, 10) || 0,
-                    er: parseInt(tr.querySelector('.game-line-er') && tr.querySelector('.game-line-er').value ? tr.querySelector('.game-line-er').value : 0, 10) || 0,
-                    w: parseInt(tr.querySelector('.game-line-w') && tr.querySelector('.game-line-w').value ? tr.querySelector('.game-line-w').value : 0, 10) || 0,
-                    l: parseInt(tr.querySelector('.game-line-l') && tr.querySelector('.game-line-l').value ? tr.querySelector('.game-line-l').value : 0, 10) || 0,
-                    sv: parseInt(tr.querySelector('.game-line-sv') && tr.querySelector('.game-line-sv').value ? tr.querySelector('.game-line-sv').value : 0, 10) || 0
+                    h: readIntFromEl(tr, '.game-line-h'),
+                    er: readIntFromEl(tr, '.game-line-er'),
+                    w: readIntFromEl(tr, '.game-line-w'),
+                    l: readIntFromEl(tr, '.game-line-l'),
+                    sv: readIntFromEl(tr, '.game-line-sv'),
+                    result: readStrFromEl(tr, '.game-line-result'),
+                    bf: readIntFromEl(tr, '.game-line-bf'),
+                    ab: readIntFromEl(tr, '.game-line-ab'),
+                    hr: readIntFromEl(tr, '.game-line-hr'),
+                    sh: readIntFromEl(tr, '.game-line-sh'),
+                    sf: readIntFromEl(tr, '.game-line-sf'),
+                    bb: readIntFromEl(tr, '.game-line-bb'),
+                    hbp: readIntFromEl(tr, '.game-line-hbp'),
+                    so: readIntFromEl(tr, '.game-line-so'),
+                    wp: readIntFromEl(tr, '.game-line-wp'),
+                    balk: readIntFromEl(tr, '.game-line-balk'),
+                    r: readIntFromEl(tr, '.game-line-r'),
+                    np: readIntFromEl(tr, '.game-line-np'),
+                    season_era: (function () {
+                        var el = tr.querySelector('.game-line-season-era');
+                        if (!el || el.value === undefined || el.value === '') return null;
+                        var v = parseFloat(el.value);
+                        return isNaN(v) ? null : v;
+                    })()
                 });
             });
         }
@@ -6033,6 +6209,36 @@
         if (scheduleLeagueFilter) scheduleLeagueFilter.addEventListener('change', withAuth(runScheduleSearch));
         if (scheduleAddForm) scheduleAddForm.addEventListener('submit', withManage(handleScheduleAddSubmit));
         if (gameScorecardSaveBtn) gameScorecardSaveBtn.addEventListener('click', withManage(function (e) { if (e && e.preventDefault) e.preventDefault(); return handleGameScorecardSave(); }));
+
+        var scorecardModal = document.getElementById('gameScorecardModal');
+        if (scorecardModal) {
+            scorecardModal.addEventListener('change', function (e) {
+                if (e.target && e.target.classList && e.target.classList.contains('game-line-player-select') && gameBattingLinesBody && gameBattingLinesBody.contains(e.target)) {
+                    var tr = e.target.closest('tr');
+                    var posSpan = tr && tr.querySelector('.game-line-pos');
+                    if (posSpan && e.target.value) {
+                        var pl = (currentScorecardPlayers || []).filter(function (p) { return p.id === e.target.value; })[0];
+                        posSpan.textContent = pl ? (pl.primaryPos || '') : '';
+                    }
+                }
+            });
+            scorecardModal.addEventListener('input', function (e) {
+                if (!e.target || !e.target.classList) return;
+                if (gameBattingLinesBody && gameBattingLinesBody.contains(e.target) && (e.target.classList.contains('game-line-ab') || e.target.classList.contains('game-line-h'))) {
+                    var tr = e.target.closest('tr');
+                    var abEl = tr && tr.querySelector('.game-line-ab');
+                    var hEl = tr && tr.querySelector('.game-line-h');
+                    var avgEl = tr && tr.querySelector('.game-line-avg');
+                    if (avgEl && abEl && hEl) avgEl.textContent = gameBattingAvg(abEl.value, hEl.value);
+                } else if (gamePitchingLinesBody && gamePitchingLinesBody.contains(e.target) && (e.target.classList.contains('game-line-ip') || e.target.classList.contains('game-line-er'))) {
+                    var tr = e.target.closest('tr');
+                    var ipEl = tr && tr.querySelector('.game-line-ip');
+                    var erEl = tr && tr.querySelector('.game-line-er');
+                    var eraEl = tr && tr.querySelector('.game-line-era');
+                    if (eraEl && ipEl && erEl) eraEl.textContent = gamePitchingEra(ipEl.value, erEl.value);
+                }
+            });
+        }
 
         if (personalRecordAddBtn) personalRecordAddBtn.addEventListener('click', withManage(function () { return openPersonalRecordModal(null); }));
         var personalRecordExcelBtn = document.getElementById('personalRecordExcelBtn');

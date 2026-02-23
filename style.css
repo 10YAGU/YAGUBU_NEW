@@ -1997,6 +1997,72 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background: rgba(0, 0, 0, 0.2);
     color: var(--text-primary);
 }
+
+/* 경기 기록지 새 양식: 타격(이닝별)·투수 상세 */
+.schedule-table-wrap-scorecard {
+    overflow-x: auto;
+}
+.game-batting-table .th-player,
+.game-pitching-table .th-player {
+    min-width: 160px;
+}
+.game-batting-table .td-player,
+.game-pitching-table .td-player {
+    white-space: nowrap;
+}
+.game-batting-table .td-player .game-line-order {
+    width: 44px;
+    margin-right: 6px;
+    text-align: center;
+}
+.game-batting-table .td-player .game-line-pos {
+    display: inline-block;
+    min-width: 28px;
+    margin-right: 6px;
+    font-size: 0.9em;
+    color: var(--text-muted);
+    vertical-align: middle;
+}
+.game-batting-table .td-player .game-line-player-select {
+    min-width: 100px;
+}
+.game-batting-table input.game-line-inning-1,
+.game-batting-table input.game-line-inning-2,
+.game-batting-table input.game-line-inning-3,
+.game-batting-table input.game-line-inning-4,
+.game-batting-table input.game-line-inning-5,
+.game-batting-table input.game-line-inning-6,
+.game-batting-table input.game-line-inning-7,
+.game-batting-table input.game-line-inning-8,
+.game-batting-table input.game-line-inning-9 {
+    width: 64px;
+    max-width: 80px;
+    font-size: 13px;
+    padding: 4px 6px;
+}
+.game-lines-table .game-line-avg,
+.game-lines-table .game-line-era {
+    display: inline-block;
+    min-width: 44px;
+    padding: 4px 8px;
+    font-weight: 600;
+    text-align: center;
+    color: var(--text-primary);
+}
+.game-lines-table input.game-line-season-avg,
+.game-lines-table input.game-line-season-era {
+    width: 52px;
+    text-align: center;
+}
+.game-pitching-table input.game-line-result {
+    width: 48px;
+    text-align: center;
+}
+.game-pitching-table .th-action,
+.game-batting-table .th-action {
+    width: 60px;
+}
+
 /* 전역 콤보박스 옵션: 밝은 배경 + 어두운 글자로 가독성 확보 (모달·필터·리그·경기기록지 등 공통) */
 select option {
     background: #f5f5f5;
