@@ -2010,21 +2010,36 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .game-pitching-table .td-player {
     white-space: nowrap;
 }
+.scorecard-cell-label {
+    display: inline-block;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-right: 4px;
+    vertical-align: middle;
+}
 .game-batting-table .td-player .game-line-order {
-    width: 44px;
-    margin-right: 6px;
+    width: 40px;
+    margin-right: 8px;
     text-align: center;
+    vertical-align: middle;
 }
 .game-batting-table .td-player .game-line-pos {
     display: inline-block;
-    min-width: 28px;
-    margin-right: 6px;
-    font-size: 0.9em;
+    min-width: 24px;
+    margin-right: 8px;
+    font-size: 0.85em;
     color: var(--text-muted);
     vertical-align: middle;
 }
 .game-batting-table .td-player .game-line-player-select {
-    min-width: 100px;
+    min-width: 110px;
+    vertical-align: middle;
+}
+.game-batting-table .td-player .scorecard-cell-label:first-of-type {
+    margin-right: 2px;
+}
+.game-batting-table .td-player .scorecard-cell-label + .game-line-pos {
+    margin-left: 0;
 }
 .game-batting-table input.game-line-inning-1,
 .game-batting-table input.game-line-inning-2,
@@ -2040,6 +2055,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     font-size: 13px;
     padding: 4px 6px;
 }
+/* 타율·방어율: 자동 계산 표시(입력란 아님) */
 .game-lines-table .game-line-avg,
 .game-lines-table .game-line-era {
     display: inline-block;
@@ -2049,13 +2065,61 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     text-align: center;
     color: var(--text-primary);
 }
+.game-line-readonly {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    cursor: default;
+    user-select: none;
+}
+.game-line-readonly:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
 .game-lines-table input.game-line-season-avg,
 .game-lines-table input.game-line-season-era {
     width: 52px;
+    min-width: 52px;
     text-align: center;
 }
+/* 투수 기록: 결과·승·패·세·시즌 칸이 잘리지 않도록 최소 너비 */
+.game-pitching-table .td-player {
+    min-width: 140px;
+}
+.game-pitching-table .td-player .scorecard-cell-label {
+    margin-right: 4px;
+}
 .game-pitching-table input.game-line-result {
-    width: 48px;
+    width: 52px;
+    min-width: 52px;
+    text-align: center;
+}
+.game-pitching-table .td-result {
+    min-width: 56px;
+}
+.game-pitching-table .td-w,
+.game-pitching-table .td-l,
+.game-pitching-table .td-sv {
+    min-width: 48px;
+}
+.game-pitching-table .td-w input,
+.game-pitching-table .td-l input,
+.game-pitching-table .td-sv input {
+    width: 40px;
+    min-width: 40px;
+    text-align: center;
+}
+.game-pitching-table .td-era {
+    min-width: 52px;
+}
+.game-pitching-table .td-era .game-line-era {
+    min-width: 44px;
+}
+.game-pitching-table .td-season {
+    min-width: 56px;
+}
+.game-pitching-table .td-season input {
+    width: 52px;
+    min-width: 52px;
     text-align: center;
 }
 .game-pitching-table .th-action,

@@ -4732,26 +4732,28 @@
         var i7 = escapeHtml((line.inning_7 || '').trim());
         var i8 = escapeHtml((line.inning_8 || '').trim());
         var i9 = escapeHtml((line.inning_9 || '').trim());
+        var orderAttr = (orderVal !== '' && orderVal != null) ? ' value="' + escapeHtml(String(orderVal)) + '"' : ' placeholder="타순"';
         return '<tr class="game-line-row" data-row-id="' + escapeHtml(rowId) + '">' +
-            '<td class="td-player"><input type="number" class="game-line-order" min="1" max="99" placeholder="타순" value="' + escapeHtml(String(orderVal)) + '" title="타순" />' +
-            '<span class="game-line-pos" title="포지션">' + escapeHtml(pos) + '</span>' +
-            '<select class="game-line-player-select">' + playerSelectOptions(players, pid) + '</select></td>' +
-            '<td><input type="text" class="game-line-inning-1" value="' + i1 + '" placeholder="1회" title="1회" /></td>' +
-            '<td><input type="text" class="game-line-inning-2" value="' + i2 + '" placeholder="2회" title="2회" /></td>' +
-            '<td><input type="text" class="game-line-inning-3" value="' + i3 + '" placeholder="3회" title="3회" /></td>' +
-            '<td><input type="text" class="game-line-inning-4" value="' + i4 + '" placeholder="4회" title="4회" /></td>' +
-            '<td><input type="text" class="game-line-inning-5" value="' + i5 + '" placeholder="5회" title="5회" /></td>' +
-            '<td><input type="text" class="game-line-inning-6" value="' + i6 + '" placeholder="6회" title="6회" /></td>' +
-            '<td><input type="text" class="game-line-inning-7" value="' + i7 + '" placeholder="7회" title="7회" /></td>' +
-            '<td><input type="text" class="game-line-inning-8" value="' + i8 + '" placeholder="8회" title="8회" /></td>' +
-            '<td><input type="text" class="game-line-inning-9" value="' + i9 + '" placeholder="9회" title="9회" /></td>' +
-            '<td><input type="number" class="game-line-ab" min="0" value="' + (line.ab != null ? line.ab : 0) + '" /></td>' +
-            '<td><input type="number" class="game-line-h" min="0" value="' + (line.h != null ? line.h : 0) + '" /></td>' +
-            '<td><input type="number" class="game-line-rbi" min="0" value="' + (line.rbi != null ? line.rbi : 0) + '" /></td>' +
-            '<td><input type="number" class="game-line-r" min="0" value="' + (line.r != null ? line.r : 0) + '" /></td>' +
-            '<td><input type="number" class="game-line-sb" min="0" value="' + (line.sb != null ? line.sb : 0) + '" /></td>' +
-            '<td><span class="game-line-avg" data-ab="' + (line.ab != null ? line.ab : 0) + '" data-h="' + (line.h != null ? line.h : 0) + '">' + avg + '</span></td>' +
-            '<td><input type="text" class="game-line-season-avg" value="' + escapeHtml(seasonVal) + '" placeholder="시즌" title="시즌 타율" /></td>' +
+            '<td class="td-player">' +
+            '<span class="scorecard-cell-label">타순</span><input type="number" class="game-line-order" min="1" max="99" title="타순"' + orderAttr + ' />' +
+            '<span class="scorecard-cell-label">포지션</span><span class="game-line-pos" title="포지션">' + (pos ? escapeHtml(pos) : '—') + '</span>' +
+            '<select class="game-line-player-select" title="선수">' + playerSelectOptions(players, pid) + '</select></td>' +
+            '<td><input type="text" class="game-line-inning-1" value="' + i1 + '" placeholder="예: 삼진" title="1회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-2" value="' + i2 + '" placeholder="예: 삼진" title="2회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-3" value="' + i3 + '" placeholder="예: 삼진" title="3회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-4" value="' + i4 + '" placeholder="예: 삼진" title="4회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-5" value="' + i5 + '" placeholder="예: 삼진" title="5회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-6" value="' + i6 + '" placeholder="예: 삼진" title="6회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-7" value="' + i7 + '" placeholder="예: 삼진" title="7회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-8" value="' + i8 + '" placeholder="예: 삼진" title="8회 타석 결과" /></td>' +
+            '<td><input type="text" class="game-line-inning-9" value="' + i9 + '" placeholder="예: 삼진" title="9회 타석 결과" /></td>' +
+            '<td><input type="number" class="game-line-ab" min="0" value="' + (line.ab != null ? line.ab : 0) + '" title="타수" /></td>' +
+            '<td><input type="number" class="game-line-h" min="0" value="' + (line.h != null ? line.h : 0) + '" title="안타" /></td>' +
+            '<td><input type="number" class="game-line-rbi" min="0" value="' + (line.rbi != null ? line.rbi : 0) + '" title="타점" /></td>' +
+            '<td><input type="number" class="game-line-r" min="0" value="' + (line.r != null ? line.r : 0) + '" title="득점" /></td>' +
+            '<td><input type="number" class="game-line-sb" min="0" value="' + (line.sb != null ? line.sb : 0) + '" title="도루" /></td>' +
+            '<td><span class="game-line-avg game-line-readonly" data-ab="' + (line.ab != null ? line.ab : 0) + '" data-h="' + (line.h != null ? line.h : 0) + '" title="자동 계산 (안타÷타수)">' + avg + '</span></td>' +
+            '<td><input type="text" class="game-line-season-avg" value="' + escapeHtml(seasonVal) + '" placeholder="시즌 타율" title="시즌 타율 (선택)" /></td>' +
             '<td><button type="button" class="btn btn-small btn-remove-line" title="행 삭제">삭제</button></td></tr>';
     }
 
@@ -4768,11 +4770,11 @@
         var era = gamePitchingEra(line.ip, line.er);
         var seasonEraVal = line.season_era != null && line.season_era !== '' ? String(line.season_era) : '';
         return '<tr class="game-line-row" data-row-id="' + escapeHtml(rowId) + '">' +
-            '<td class="td-player"><select class="game-line-player-select">' + playerSelectOptions(players, pid) + '</select></td>' +
-            '<td><input type="text" class="game-line-result" value="' + escapeHtml((line.result || '').trim()) + '" placeholder="승/패" title="결과" /></td>' +
-            '<td><input type="number" class="game-line-w" min="0" value="' + (line.w != null ? line.w : 0) + '" title="승" /></td>' +
-            '<td><input type="number" class="game-line-l" min="0" value="' + (line.l != null ? line.l : 0) + '" title="패" /></td>' +
-            '<td><input type="number" class="game-line-sv" min="0" value="' + (line.sv != null ? line.sv : 0) + '" title="세이브" /></td>' +
+            '<td class="td-player"><span class="scorecard-cell-label">선수</span><select class="game-line-player-select" title="선수">' + playerSelectOptions(players, pid) + '</select></td>' +
+            '<td class="td-result"><input type="text" class="game-line-result" value="' + escapeHtml((line.result || '').trim()) + '" placeholder="승/패" title="결과(예: 승)" /></td>' +
+            '<td class="td-w"><input type="number" class="game-line-w" min="0" value="' + (line.w != null ? line.w : 0) + '" title="승" /></td>' +
+            '<td class="td-l"><input type="number" class="game-line-l" min="0" value="' + (line.l != null ? line.l : 0) + '" title="패" /></td>' +
+            '<td class="td-sv"><input type="number" class="game-line-sv" min="0" value="' + (line.sv != null ? line.sv : 0) + '" title="세이브" /></td>' +
             '<td><input type="number" class="game-line-ip" min="0" step="0.1" value="' + (line.ip != null && line.ip !== '' ? line.ip : 0) + '" placeholder="5.1" title="이닝" /></td>' +
             '<td><input type="number" class="game-line-bf" min="0" value="' + (line.bf != null ? line.bf : 0) + '" title="타자" /></td>' +
             '<td><input type="number" class="game-line-ab" min="0" value="' + (line.ab != null ? line.ab : 0) + '" title="타수" /></td>' +
@@ -4788,8 +4790,8 @@
             '<td><input type="number" class="game-line-r" min="0" value="' + (line.r != null ? line.r : 0) + '" title="실점" /></td>' +
             '<td><input type="number" class="game-line-er" min="0" value="' + (line.er != null ? line.er : 0) + '" title="자책점" /></td>' +
             '<td><input type="number" class="game-line-np" min="0" value="' + (line.np != null ? line.np : 0) + '" title="투구수" /></td>' +
-            '<td><span class="game-line-era" data-ip="' + (line.ip != null ? line.ip : 0) + '" data-er="' + (line.er != null ? line.er : 0) + '">' + era + '</span></td>' +
-            '<td><input type="text" class="game-line-season-era" value="' + escapeHtml(seasonEraVal) + '" placeholder="시즌" title="시즌 방어율" /></td>' +
+            '<td class="td-era"><span class="game-line-era game-line-readonly" data-ip="' + (line.ip != null ? line.ip : 0) + '" data-er="' + (line.er != null ? line.er : 0) + '" title="자동 계산 (자책점×9÷이닝)">' + era + '</span></td>' +
+            '<td class="td-season"><input type="text" class="game-line-season-era" value="' + escapeHtml(seasonEraVal) + '" placeholder="시즌" title="시즌 방어율 (선택)" /></td>' +
             '<td><button type="button" class="btn btn-small btn-remove-line" title="행 삭제">삭제</button></td></tr>';
     }
 
