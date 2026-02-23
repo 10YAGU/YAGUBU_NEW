@@ -2023,6 +2023,15 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     background: rgba(0, 0, 0, 0.2);
     color: var(--text-primary);
 }
+/* 경기 기록지 선수 콤보만: 폭·패딩 별도 적용(아래 .game-*-table .td-player .game-line-player-select) */
+.game-scorecard-body .game-batting-table .td-player .game-line-player-select,
+.game-scorecard-body .game-pitching-table .td-player .game-line-player-select {
+    min-width: 70px;
+    max-width: 96px;
+    padding: 6px 24px 6px 6px;
+    text-align: left;
+    font-size: 14px;
+}
 .game-lines-table input[type="number"] {
     width: 56px;
     padding: 6px 8px;
@@ -2054,33 +2063,39 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     font-size: 15px;
 }
 .game-batting-table .th-player {
-    min-width: 220px;
+    min-width: 120px;
+    max-width: 120px;
 }
 .game-pitching-table .th-player {
-    min-width: 220px;
+    min-width: 120px;
+    max-width: 120px;
 }
 .game-batting-table .td-player,
 .game-pitching-table .td-player {
     white-space: nowrap;
 }
-/* 선수 콤보가 1회 칸까지 넘치지 않도록 영역 제한 + 성명 표시 */
+/* 그리드 콤보박스: 절반 폭으로 제한해 1회/2회 칸과 겹치지 않음 */
 .game-batting-table .td-player {
-    padding-right: 24px;
-    min-width: 220px;
-    max-width: 220px;
+    padding-right: 12px;
+    padding-left: 4px;
+    min-width: 120px;
+    max-width: 120px;
     overflow: hidden;
 }
 .game-batting-table .td-player .game-line-player-select {
-    min-width: 160px;
-    max-width: 196px;
+    min-width: 70px;
+    max-width: 96px;
     width: 100%;
-    padding-right: 28px;
+    padding-left: 6px;
+    padding-right: 24px;
     box-sizing: border-box;
     vertical-align: middle;
+    text-align: left;
+    font-size: 14px;
 }
-/* 1회 열 왼쪽 여백으로 콤보와 시각적 간격 */
+/* 1회 열 왼쪽 여백 */
 .game-batting-table tbody tr td:nth-child(2) {
-    padding-left: 16px;
+    padding-left: 12px;
 }
 .scorecard-cell-label {
     display: inline-block;
@@ -2163,23 +2178,27 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     min-width: 52px;
     text-align: center;
 }
-/* 투수 기록: 선수 콤보가 결과 칸까지 넘치지 않도록 영역 제한 */
+/* 투수 기록: 그리드 콤보박스 절반 폭 + 결과 칸 겹침 방지 */
 .game-pitching-table .td-player {
-    min-width: 220px;
-    max-width: 220px;
-    padding-right: 24px;
+    min-width: 120px;
+    max-width: 120px;
+    padding-right: 12px;
+    padding-left: 4px;
     overflow: hidden;
 }
 .game-pitching-table .td-player .game-line-player-select {
-    min-width: 160px;
-    max-width: 196px;
+    min-width: 70px;
+    max-width: 96px;
     width: 100%;
-    padding-right: 28px;
+    padding-left: 6px;
+    padding-right: 24px;
     box-sizing: border-box;
+    text-align: left;
+    font-size: 14px;
 }
-/* 결과 열 왼쪽 여백으로 콤보와 시각적 간격 */
+/* 결과 열 왼쪽 여백 */
 .game-pitching-table tbody tr td:nth-child(2) {
-    padding-left: 16px;
+    padding-left: 12px;
 }
 .game-pitching-table .td-player .scorecard-cell-label {
     margin-right: 4px;
