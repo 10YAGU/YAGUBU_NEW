@@ -2053,13 +2053,27 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     padding: 10px;
     font-size: 15px;
 }
-.game-batting-table .th-player,
+.game-batting-table .th-player {
+    min-width: 180px;
+}
 .game-pitching-table .th-player {
-    min-width: 160px;
+    min-width: 180px;
 }
 .game-batting-table .td-player,
 .game-pitching-table .td-player {
     white-space: nowrap;
+}
+/* 선수(번호 성명) 콤보와 1회 입력란 겹침 방지 */
+.game-batting-table .td-player {
+    padding-right: 20px;
+    min-width: 180px;
+}
+.game-batting-table .td-player .game-line-player-select {
+    min-width: 110px;
+    padding-right: 28px;
+    max-width: 100%;
+    box-sizing: border-box;
+    vertical-align: middle;
 }
 .scorecard-cell-label {
     display: inline-block;
@@ -2080,10 +2094,6 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     margin-right: 8px;
     font-size: 0.85em;
     color: var(--text-muted);
-    vertical-align: middle;
-}
-.game-batting-table .td-player .game-line-player-select {
-    min-width: 110px;
     vertical-align: middle;
 }
 .game-batting-table .td-player .scorecard-cell-label:first-of-type {
@@ -2146,9 +2156,16 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     min-width: 52px;
     text-align: center;
 }
-/* 투수 기록: 결과·승·패·세·시즌 칸이 잘리지 않도록 최소 너비 */
+/* 투수 기록: 선수 콤보와 결과 입력란 겹침 방지 + 결과·승·패·세·시즌 칸 최소 너비 */
 .game-pitching-table .td-player {
-    min-width: 140px;
+    min-width: 180px;
+    padding-right: 20px;
+}
+.game-pitching-table .td-player .game-line-player-select {
+    min-width: 120px;
+    padding-right: 28px;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 .game-pitching-table .td-player .scorecard-cell-label {
     margin-right: 4px;
