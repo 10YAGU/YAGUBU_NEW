@@ -181,6 +181,7 @@
     var statsWin = document.getElementById('statsWin');
     var statsLoss = document.getElementById('statsLoss');
     var statsDraw = document.getElementById('statsDraw');
+    var statsLeagueLabel = document.getElementById('statsLeagueLabel');
 
     var editingScheduleId = null;
 
@@ -5122,12 +5123,26 @@
         });
     }
 
+    /** 완료 경기에서 result가 없어도 스코어로 승/패/무 산출 (시즌전적·그리드 표시용) */
+    function getResultFromSchedule(s) {
+        if (!s) return '';
+        var r = (s.result || '').trim();
+        if (r === '승' || r === '패' || r === '무') return r;
+        if ((s.status || '') !== '완료') return '';
+        var our = parseInt(s.ourScore, 10);
+        var opp = parseInt(s.opponentScore, 10);
+        if (isNaN(our) || isNaN(opp)) return '';
+        if (our > opp) return '승';
+        if (our < opp) return '패';
+        return '무';
+    }
+
     function scheduleResultDisplay(s) {
         var status = s.status || '예정';
-        var result = s.result || '';
         if (status === '예정') return { label: '경기예정', cls: 'scheduled' };
         if (status === '진행중') return { label: '진행중', cls: 'scheduled' };
         if (status === '완료') {
+            var result = getResultFromSchedule(s);
             if (result === '승') return { label: '승', cls: 'win' };
             if (result === '패') return { label: '패', cls: 'loss' };
             if (result === '무') return { label: '무', cls: 'draw' };
@@ -5194,13 +5209,14 @@
         var completed = raw.filter(function (s) { return s.status === '완료'; });
         var wins = 0, losses = 0, draws = 0;
         completed.forEach(function (s) {
-            var r = s.result || '';
+            var r = getResultFromSchedule(s);
             if (r === '승') wins += 1;
             else if (r === '패') losses += 1;
             else if (r === '무') draws += 1;
         });
         var total = wins + losses + draws;
         var rate = total > 0 ? Math.round((wins / total) * 100) : 0;
+        if (statsLeagueLabel) statsLeagueLabel.textContent = leagueId ? leagueName(leagueId) : '전체';
         if (statsWinRate) statsWinRate.textContent = rate + '%';
         if (statsWin) statsWin.textContent = String(wins) + '승';
         if (statsLoss) statsLoss.textContent = String(losses) + '패';

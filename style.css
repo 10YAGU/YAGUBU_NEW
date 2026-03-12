@@ -1568,6 +1568,16 @@ body[data-theme="dark"] .logo {
 }
 
 /* 시즌 전적 */
+.stats-card .card-header {
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.stats-league-label {
+    font-size: 13px;
+    color: #aaa;
+    font-weight: normal;
+}
 .win-rate-container {
     display: flex;
     flex-direction: column;
