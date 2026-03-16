@@ -10,6 +10,8 @@
         PITCHER: 'yagubu_pitcher_records',
         GAME_BATTING_LINES: 'yagubu_game_batting_lines',
         GAME_PITCHING_LINES: 'yagubu_game_pitching_lines',
+        GAME_OPPONENT_BATTING_LINES: 'yagubu_game_opponent_batting_lines',
+        GAME_OPPONENT_PITCHING_LINES: 'yagubu_game_opponent_pitching_lines',
         COMMUNITY: 'yagubu_community_posts',
         COMMUNITY_COMMENTS: 'yagubu_community_comments',
         GALLERY: 'yagubu_gallery_items',
@@ -174,8 +176,12 @@
     var gameScorecardInfo = document.getElementById('gameScorecardInfo');
     var gameBattingLinesBody = document.getElementById('gameBattingLinesBody');
     var gamePitchingLinesBody = document.getElementById('gamePitchingLinesBody');
+    var gameOpponentBattingLinesBody = document.getElementById('gameOpponentBattingLinesBody');
+    var gameOpponentPitchingLinesBody = document.getElementById('gameOpponentPitchingLinesBody');
     var gameBattingAddRowBtn = document.getElementById('gameBattingAddRowBtn');
     var gamePitchingAddRowBtn = document.getElementById('gamePitchingAddRowBtn');
+    var gameOpponentBattingAddRowBtn = document.getElementById('gameOpponentBattingAddRowBtn');
+    var gameOpponentPitchingAddRowBtn = document.getElementById('gameOpponentPitchingAddRowBtn');
     var gameScorecardSaveBtn = document.getElementById('gameScorecardSaveBtn');
     var currentScorecardScheduleId = null;
     var currentScorecardPlayers = [];
@@ -430,6 +436,27 @@
 
     function saveGamePitchingLines(arr) {
         localStorage.setItem(STORAGE_KEYS.GAME_PITCHING_LINES, JSON.stringify(arr || []));
+    }
+
+    function getGameOpponentBattingLines() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEYS.GAME_OPPONENT_BATTING_LINES) || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
+    function saveGameOpponentBattingLines(arr) {
+        localStorage.setItem(STORAGE_KEYS.GAME_OPPONENT_BATTING_LINES, JSON.stringify(arr || []));
+    }
+    function getGameOpponentPitchingLines() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEYS.GAME_OPPONENT_PITCHING_LINES) || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
+    function saveGameOpponentPitchingLines(arr) {
+        localStorage.setItem(STORAGE_KEYS.GAME_OPPONENT_PITCHING_LINES, JSON.stringify(arr || []));
     }
 
     function getCommunityPosts() {
@@ -1079,6 +1106,211 @@
             };
         });
         var resIns = await client.from('game_pitching_lines').insert(rows);
+        if (resIns.error) throw resIns.error;
+    }
+
+    async function dbListGameOpponentBattingLines(scheduleId) {
+        if (!scheduleId) return [];
+        if (!isSupabaseReady()) {
+            return (getGameOpponentBattingLines() || []).filter(function (r) { return r && r.scheduleId === scheduleId; });
+        }
+        var client = ensureSb();
+        var res = await client.from('game_opponent_batting_lines').select('*').eq('schedule_id', scheduleId).order('created_at', { ascending: true });
+        if (res.error) throw res.error;
+        return (res.data || []).map(function (r) {
+            return {
+                id: r.id,
+                scheduleId: r.schedule_id,
+                playerName: r.player_name || '',
+                ab: r.ab,
+                h: r.h,
+                rbi: r.rbi,
+                r: r.r,
+                sb: r.sb,
+                battingOrder: r.batting_order != null ? r.batting_order : null,
+                inning_1: r.inning_1 || '',
+                inning_2: r.inning_2 || '',
+                inning_3: r.inning_3 || '',
+                inning_4: r.inning_4 || '',
+                inning_5: r.inning_5 || '',
+                inning_6: r.inning_6 || '',
+                inning_7: r.inning_7 || '',
+                inning_8: r.inning_8 || '',
+                inning_9: r.inning_9 || '',
+                season_avg: r.season_avg != null ? parseFloat(String(r.season_avg)) : null
+            };
+        });
+    }
+
+    async function dbReplaceGameOpponentBattingLines(scheduleId, lines) {
+        if (!scheduleId) return;
+        if (!isSupabaseReady()) {
+            var all = (getGameOpponentBattingLines() || []).filter(function (r) { return r && r.scheduleId !== scheduleId; });
+            (lines || []).forEach(function (ln) {
+                all.push({
+                    id: ln.id || 'gobl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9),
+                    scheduleId: scheduleId,
+                    playerName: (ln.playerName || '').trim(),
+                    ab: toInt(ln.ab),
+                    h: toInt(ln.h),
+                    rbi: toInt(ln.rbi),
+                    r: toInt(ln.r),
+                    sb: toInt(ln.sb),
+                    battingOrder: ln.battingOrder != null && ln.battingOrder !== '' ? parseInt(String(ln.battingOrder), 10) : null,
+                    inning_1: ln.inning_1 || '',
+                    inning_2: ln.inning_2 || '',
+                    inning_3: ln.inning_3 || '',
+                    inning_4: ln.inning_4 || '',
+                    inning_5: ln.inning_5 || '',
+                    inning_6: ln.inning_6 || '',
+                    inning_7: ln.inning_7 || '',
+                    inning_8: ln.inning_8 || '',
+                    inning_9: ln.inning_9 || '',
+                    season_avg: ln.season_avg != null && ln.season_avg !== '' ? parseFloat(String(ln.season_avg)) : null
+                });
+            });
+            saveGameOpponentBattingLines(all);
+            return;
+        }
+        var client = ensureSb();
+        var resDel = await client.from('game_opponent_batting_lines').delete().eq('schedule_id', scheduleId);
+        if (resDel.error) throw resDel.error;
+        if (!lines || !lines.length) return;
+        var rows = lines.map(function (ln) {
+            return {
+                id: ln.id || 'gobl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9),
+                schedule_id: scheduleId,
+                player_name: (ln.playerName || '').trim(),
+                pa: toInt(ln.pa),
+                ab: toInt(ln.ab),
+                h: toInt(ln.h),
+                rbi: toInt(ln.rbi),
+                r: toInt(ln.r),
+                bb: toInt(ln.bb),
+                so: toInt(ln.so),
+                sb: toInt(ln.sb),
+                batting_order: ln.battingOrder != null && ln.battingOrder !== '' ? parseInt(String(ln.battingOrder), 10) : null,
+                inning_1: (ln.inning_1 || '').trim(),
+                inning_2: (ln.inning_2 || '').trim(),
+                inning_3: (ln.inning_3 || '').trim(),
+                inning_4: (ln.inning_4 || '').trim(),
+                inning_5: (ln.inning_5 || '').trim(),
+                inning_6: (ln.inning_6 || '').trim(),
+                inning_7: (ln.inning_7 || '').trim(),
+                inning_8: (ln.inning_8 || '').trim(),
+                inning_9: (ln.inning_9 || '').trim(),
+                season_avg: ln.season_avg != null && ln.season_avg !== '' ? parseFloat(String(ln.season_avg)) : null,
+                created_at: new Date().toISOString()
+            };
+        });
+        var resIns = await client.from('game_opponent_batting_lines').insert(rows);
+        if (resIns.error) throw resIns.error;
+    }
+
+    async function dbListGameOpponentPitchingLines(scheduleId) {
+        if (!scheduleId) return [];
+        if (!isSupabaseReady()) {
+            return (getGameOpponentPitchingLines() || []).filter(function (r) { return r && r.scheduleId === scheduleId; });
+        }
+        var client = ensureSb();
+        var res = await client.from('game_opponent_pitching_lines').select('*').eq('schedule_id', scheduleId).order('created_at', { ascending: true });
+        if (res.error) throw res.error;
+        return (res.data || []).map(function (r) {
+            return {
+                id: r.id,
+                scheduleId: r.schedule_id,
+                playerName: r.player_name || '',
+                ip: r.ip,
+                h: r.h,
+                er: r.er,
+                w: r.w,
+                l: r.l,
+                sv: r.sv,
+                result: r.result || '',
+                bf: r.bf != null ? r.bf : 0,
+                ab: r.ab != null ? r.ab : 0,
+                hr: r.hr != null ? r.hr : 0,
+                sh: r.sh != null ? r.sh : 0,
+                sf: r.sf != null ? r.sf : 0,
+                bb: r.bb != null ? r.bb : 0,
+                hbp: r.hbp != null ? r.hbp : 0,
+                so: r.so != null ? r.so : 0,
+                wp: r.wp != null ? r.wp : 0,
+                balk: r.balk != null ? r.balk : 0,
+                r: r.r != null ? r.r : 0,
+                np: r.np != null ? r.np : 0,
+                season_era: r.season_era != null ? parseFloat(String(r.season_era)) : null
+            };
+        });
+    }
+
+    async function dbReplaceGameOpponentPitchingLines(scheduleId, lines) {
+        if (!scheduleId) return;
+        if (!isSupabaseReady()) {
+            var all = (getGameOpponentPitchingLines() || []).filter(function (r) { return r && r.scheduleId !== scheduleId; });
+            (lines || []).forEach(function (ln) {
+                all.push({
+                    id: ln.id || 'gopl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9),
+                    scheduleId: scheduleId,
+                    playerName: (ln.playerName || '').trim(),
+                    ip: parseFloat(String(ln.ip || '0')) || 0,
+                    h: toInt(ln.h),
+                    er: toInt(ln.er),
+                    w: toInt(ln.w),
+                    l: toInt(ln.l),
+                    sv: toInt(ln.sv),
+                    result: ln.result || '',
+                    bf: toInt(ln.bf),
+                    ab: toInt(ln.ab),
+                    hr: toInt(ln.hr),
+                    sh: toInt(ln.sh),
+                    sf: toInt(ln.sf),
+                    bb: toInt(ln.bb),
+                    hbp: toInt(ln.hbp),
+                    so: toInt(ln.so),
+                    wp: toInt(ln.wp),
+                    balk: toInt(ln.balk),
+                    r: toInt(ln.r),
+                    np: toInt(ln.np),
+                    season_era: ln.season_era != null && ln.season_era !== '' ? parseFloat(String(ln.season_era)) : null
+                });
+            });
+            saveGameOpponentPitchingLines(all);
+            return;
+        }
+        var client = ensureSb();
+        var resDel = await client.from('game_opponent_pitching_lines').delete().eq('schedule_id', scheduleId);
+        if (resDel.error) throw resDel.error;
+        if (!lines || !lines.length) return;
+        var rows = lines.map(function (ln) {
+            return {
+                id: ln.id || 'gopl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 9),
+                schedule_id: scheduleId,
+                player_name: (ln.playerName || '').trim(),
+                ip: parseFloat(String(ln.ip || '0')) || 0,
+                h: toInt(ln.h),
+                er: toInt(ln.er),
+                w: toInt(ln.w),
+                l: toInt(ln.l),
+                sv: toInt(ln.sv),
+                result: (ln.result || '').trim(),
+                bf: toInt(ln.bf),
+                ab: toInt(ln.ab),
+                hr: toInt(ln.hr),
+                sh: toInt(ln.sh),
+                sf: toInt(ln.sf),
+                bb: toInt(ln.bb),
+                hbp: toInt(ln.hbp),
+                so: toInt(ln.so),
+                wp: toInt(ln.wp),
+                balk: toInt(ln.balk),
+                r: toInt(ln.r),
+                np: toInt(ln.np),
+                season_era: ln.season_era != null && ln.season_era !== '' ? parseFloat(String(ln.season_era)) : null,
+                created_at: new Date().toISOString()
+            };
+        });
+        var resIns = await client.from('game_opponent_pitching_lines').insert(rows);
         if (resIns.error) throw resIns.error;
     }
 
@@ -4797,6 +5029,76 @@
             '<td><button type="button" class="btn btn-small btn-remove-line" title="행 삭제">삭제</button></td></tr>';
     }
 
+    function makeGameOpponentBattingRow(line) {
+        line = line || {};
+        var rowId = line.id || 'gobl_row_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        var nameVal = escapeHtml((line.playerName || '').trim());
+        var orderVal = line.battingOrder != null && line.battingOrder !== '' ? line.battingOrder : '';
+        var avg = gameBattingAvg(line.ab, line.h);
+        var seasonVal = line.season_avg != null && line.season_avg !== '' ? String(line.season_avg) : '';
+        var i1 = escapeHtml((line.inning_1 || '').trim());
+        var i2 = escapeHtml((line.inning_2 || '').trim());
+        var i3 = escapeHtml((line.inning_3 || '').trim());
+        var i4 = escapeHtml((line.inning_4 || '').trim());
+        var i5 = escapeHtml((line.inning_5 || '').trim());
+        var i6 = escapeHtml((line.inning_6 || '').trim());
+        var i7 = escapeHtml((line.inning_7 || '').trim());
+        var i8 = escapeHtml((line.inning_8 || '').trim());
+        var i9 = escapeHtml((line.inning_9 || '').trim());
+        var orderValStr = (orderVal !== '' && orderVal != null) ? escapeHtml(String(orderVal)) : '';
+        return '<tr class="game-line-row game-opponent-row" data-row-id="' + escapeHtml(rowId) + '">' +
+            '<td class="td-player"><input type="text" class="game-opponent-player-name" value="' + nameVal + '" placeholder="상대팀 선수명" title="상대팀 선수명" /></td>' +
+            '<td><input type="text" class="game-line-inning-1" value="' + i1 + '" title="1회" /></td>' +
+            '<td><input type="text" class="game-line-inning-2" value="' + i2 + '" title="2회" /></td>' +
+            '<td><input type="text" class="game-line-inning-3" value="' + i3 + '" title="3회" /></td>' +
+            '<td><input type="text" class="game-line-inning-4" value="' + i4 + '" title="4회" /></td>' +
+            '<td><input type="text" class="game-line-inning-5" value="' + i5 + '" title="5회" /></td>' +
+            '<td><input type="text" class="game-line-inning-6" value="' + i6 + '" title="6회" /></td>' +
+            '<td><input type="text" class="game-line-inning-7" value="' + i7 + '" title="7회" /></td>' +
+            '<td><input type="text" class="game-line-inning-8" value="' + i8 + '" title="8회" /></td>' +
+            '<td><input type="text" class="game-line-inning-9" value="' + i9 + '" title="9회" /></td>' +
+            '<td><input type="number" class="game-line-ab" min="0" value="' + (line.ab != null ? line.ab : 0) + '" title="타수" /></td>' +
+            '<td><input type="number" class="game-line-h" min="0" value="' + (line.h != null ? line.h : 0) + '" title="안타" /></td>' +
+            '<td><input type="number" class="game-line-rbi" min="0" value="' + (line.rbi != null ? line.rbi : 0) + '" title="타점" /></td>' +
+            '<td><input type="number" class="game-line-r" min="0" value="' + (line.r != null ? line.r : 0) + '" title="득점" /></td>' +
+            '<td><input type="number" class="game-line-sb" min="0" value="' + (line.sb != null ? line.sb : 0) + '" title="도루" /></td>' +
+            '<td><span class="game-line-avg game-line-readonly" data-ab="' + (line.ab != null ? line.ab : 0) + '" data-h="' + (line.h != null ? line.h : 0) + '">' + avg + '</span></td>' +
+            '<td><input type="text" class="game-line-season-avg" value="' + escapeHtml(seasonVal) + '" placeholder="시즌" title="시즌 타율 (선택)" /></td>' +
+            '<td><button type="button" class="btn btn-small btn-remove-line" title="행 삭제">삭제</button></td></tr>';
+    }
+
+    function makeGameOpponentPitchingRow(line) {
+        line = line || {};
+        var rowId = line.id || 'gopl_row_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+        var nameVal = escapeHtml((line.playerName || '').trim());
+        var era = gamePitchingEra(line.ip, line.er);
+        var seasonEraVal = line.season_era != null && line.season_era !== '' ? String(line.season_era) : '';
+        return '<tr class="game-line-row game-opponent-row" data-row-id="' + escapeHtml(rowId) + '">' +
+            '<td class="td-player"><input type="text" class="game-opponent-player-name" value="' + nameVal + '" placeholder="상대팀 선수명" title="상대팀 투수명" /></td>' +
+            '<td class="td-result"><input type="text" class="game-line-result" value="' + escapeHtml((line.result || '').trim()) + '" placeholder="승/패" /></td>' +
+            '<td class="td-w"><input type="number" class="game-line-w" min="0" value="' + (line.w != null ? line.w : 0) + '" title="승" /></td>' +
+            '<td class="td-l"><input type="number" class="game-line-l" min="0" value="' + (line.l != null ? line.l : 0) + '" title="패" /></td>' +
+            '<td class="td-sv"><input type="number" class="game-line-sv" min="0" value="' + (line.sv != null ? line.sv : 0) + '" title="세이브" /></td>' +
+            '<td><input type="number" class="game-line-ip" min="0" step="0.1" value="' + (line.ip != null && line.ip !== '' ? line.ip : 0) + '" placeholder="5.1" title="이닝" /></td>' +
+            '<td><input type="number" class="game-line-bf" min="0" value="' + (line.bf != null ? line.bf : 0) + '" title="타자" /></td>' +
+            '<td><input type="number" class="game-line-ab" min="0" value="' + (line.ab != null ? line.ab : 0) + '" title="타수" /></td>' +
+            '<td><input type="number" class="game-line-h" min="0" value="' + (line.h != null ? line.h : 0) + '" title="피안타" /></td>' +
+            '<td><input type="number" class="game-line-hr" min="0" value="' + (line.hr != null ? line.hr : 0) + '" title="피홈런" /></td>' +
+            '<td><input type="number" class="game-line-sh" min="0" value="' + (line.sh != null ? line.sh : 0) + '" title="희타" /></td>' +
+            '<td><input type="number" class="game-line-sf" min="0" value="' + (line.sf != null ? line.sf : 0) + '" title="희비" /></td>' +
+            '<td><input type="number" class="game-line-bb" min="0" value="' + (line.bb != null ? line.bb : 0) + '" title="볼넷" /></td>' +
+            '<td><input type="number" class="game-line-hbp" min="0" value="' + (line.hbp != null ? line.hbp : 0) + '" title="사구" /></td>' +
+            '<td><input type="number" class="game-line-so" min="0" value="' + (line.so != null ? line.so : 0) + '" title="삼진" /></td>' +
+            '<td><input type="number" class="game-line-wp" min="0" value="' + (line.wp != null ? line.wp : 0) + '" title="폭투" /></td>' +
+            '<td><input type="number" class="game-line-balk" min="0" value="' + (line.balk != null ? line.balk : 0) + '" title="보크" /></td>' +
+            '<td><input type="number" class="game-line-r" min="0" value="' + (line.r != null ? line.r : 0) + '" title="실점" /></td>' +
+            '<td><input type="number" class="game-line-er" min="0" value="' + (line.er != null ? line.er : 0) + '" title="자책점" /></td>' +
+            '<td><input type="number" class="game-line-np" min="0" value="' + (line.np != null ? line.np : 0) + '" title="투구수" /></td>' +
+            '<td class="td-era"><span class="game-line-era game-line-readonly" data-ip="' + (line.ip != null ? line.ip : 0) + '" data-er="' + (line.er != null ? line.er : 0) + '">' + era + '</span></td>' +
+            '<td class="td-season"><input type="text" class="game-line-season-era" value="' + escapeHtml(seasonEraVal) + '" placeholder="시즌" title="시즌 방어율 (선택)" /></td>' +
+            '<td><button type="button" class="btn btn-small btn-remove-line" title="행 삭제">삭제</button></td></tr>';
+    }
+
     async function openGameScorecardModal(scheduleId) {
         if (!scheduleId) return;
         currentScorecardScheduleId = scheduleId;
@@ -4804,6 +5106,8 @@
         if (gameScorecardInfo) gameScorecardInfo.textContent = '로딩 중...';
         if (gameBattingLinesBody) gameBattingLinesBody.innerHTML = '';
         if (gamePitchingLinesBody) gamePitchingLinesBody.innerHTML = '';
+        if (gameOpponentBattingLinesBody) gameOpponentBattingLinesBody.innerHTML = '';
+        if (gameOpponentPitchingLinesBody) gameOpponentPitchingLinesBody.innerHTML = '';
         if (gameScorecardSaveBtn) gameScorecardSaveBtn.disabled = true;
         openModal('gameScorecardModal');
 
@@ -4836,9 +5140,13 @@
         currentScorecardPlayers = players;
         var battingLines = [];
         var pitchingLines = [];
+        var opponentBattingLines = [];
+        var opponentPitchingLines = [];
         try {
             battingLines = await dbListGameBattingLines(scheduleId);
             pitchingLines = await dbListGamePitchingLines(scheduleId);
+            opponentBattingLines = await dbListGameOpponentBattingLines(scheduleId);
+            opponentPitchingLines = await dbListGameOpponentPitchingLines(scheduleId);
         } catch (e) {
             console.error(e);
         }
@@ -4878,7 +5186,55 @@
                 }
             };
         }
+        if (gameOpponentBattingLinesBody) {
+            gameOpponentBattingLinesBody.innerHTML = opponentBattingLines.length ? opponentBattingLines.map(function (ln) { return makeGameOpponentBattingRow(ln); }).join('') : '';
+            gameOpponentBattingLinesBody.querySelectorAll('.btn-remove-line').forEach(function (btn) {
+                btn.addEventListener('click', function () { btn.closest('tr').remove(); });
+            });
+        }
+        if (gameOpponentPitchingLinesBody) {
+            gameOpponentPitchingLinesBody.innerHTML = opponentPitchingLines.length ? opponentPitchingLines.map(function (ln) { return makeGameOpponentPitchingRow(ln); }).join('') : '';
+            gameOpponentPitchingLinesBody.querySelectorAll('.btn-remove-line').forEach(function (btn) {
+                btn.addEventListener('click', function () { btn.closest('tr').remove(); });
+            });
+        }
+        if (gameOpponentBattingAddRowBtn) {
+            gameOpponentBattingAddRowBtn.onclick = function () {
+                if (!gameOpponentBattingLinesBody) return;
+                var wrap = document.createElement('tbody');
+                wrap.innerHTML = makeGameOpponentBattingRow({});
+                var newTr = wrap.querySelector('tr');
+                if (newTr) {
+                    gameOpponentBattingLinesBody.appendChild(newTr);
+                    newTr.querySelector('.btn-remove-line').addEventListener('click', function () { newTr.remove(); });
+                }
+            };
+        }
+        if (gameOpponentPitchingAddRowBtn) {
+            gameOpponentPitchingAddRowBtn.onclick = function () {
+                if (!gameOpponentPitchingLinesBody) return;
+                var wrap = document.createElement('tbody');
+                wrap.innerHTML = makeGameOpponentPitchingRow({});
+                var newTr = wrap.querySelector('tr');
+                if (newTr) {
+                    gameOpponentPitchingLinesBody.appendChild(newTr);
+                    newTr.querySelector('.btn-remove-line').addEventListener('click', function () { newTr.remove(); });
+                }
+            };
+        }
         if (gameScorecardSaveBtn) gameScorecardSaveBtn.disabled = false;
+        var scorecardModal = document.getElementById('gameScorecardModal');
+        if (scorecardModal) {
+            scorecardModal.querySelectorAll('.game-scorecard-tab-btn').forEach(function (b) {
+                var isOur = b.getAttribute('data-scorecard-tab') === 'our';
+                b.classList.toggle('active', isOur);
+                b.setAttribute('aria-selected', isOur);
+            });
+            var panelOur = document.getElementById('scorecardPanelOur');
+            var panelOpponent = document.getElementById('scorecardPanelOpponent');
+            if (panelOur) panelOur.classList.add('active');
+            if (panelOpponent) panelOpponent.classList.remove('active');
+        }
     }
 
     function readIntFromEl(tr, sel) {
@@ -4971,9 +5327,78 @@
                 });
             });
         }
+        var opponentBattingLines = [];
+        if (gameOpponentBattingLinesBody) {
+            gameOpponentBattingLinesBody.querySelectorAll('tr.game-opponent-row').forEach(function (tr) {
+                var nameEl = tr.querySelector('.game-opponent-player-name');
+                var playerName = nameEl && nameEl.value !== undefined ? String(nameEl.value).trim() : '';
+                opponentBattingLines.push({
+                    playerName: playerName,
+                    ab: readIntFromEl(tr, '.game-line-ab'),
+                    h: readIntFromEl(tr, '.game-line-h'),
+                    rbi: readIntFromEl(tr, '.game-line-rbi'),
+                    r: readIntFromEl(tr, '.game-line-r'),
+                    sb: readIntFromEl(tr, '.game-line-sb'),
+                    battingOrder: null,
+                    inning_1: readStrFromEl(tr, '.game-line-inning-1'),
+                    inning_2: readStrFromEl(tr, '.game-line-inning-2'),
+                    inning_3: readStrFromEl(tr, '.game-line-inning-3'),
+                    inning_4: readStrFromEl(tr, '.game-line-inning-4'),
+                    inning_5: readStrFromEl(tr, '.game-line-inning-5'),
+                    inning_6: readStrFromEl(tr, '.game-line-inning-6'),
+                    inning_7: readStrFromEl(tr, '.game-line-inning-7'),
+                    inning_8: readStrFromEl(tr, '.game-line-inning-8'),
+                    inning_9: readStrFromEl(tr, '.game-line-inning-9'),
+                    season_avg: (function () {
+                        var el = tr.querySelector('.game-line-season-avg');
+                        if (!el || el.value === undefined || el.value === '') return null;
+                        var v = parseFloat(el.value);
+                        return isNaN(v) ? null : v;
+                    })()
+                });
+            });
+        }
+        var opponentPitchingLines = [];
+        if (gameOpponentPitchingLinesBody) {
+            gameOpponentPitchingLinesBody.querySelectorAll('tr.game-opponent-row').forEach(function (tr) {
+                var nameEl = tr.querySelector('.game-opponent-player-name');
+                var playerName = nameEl && nameEl.value !== undefined ? String(nameEl.value).trim() : '';
+                var ipVal = readFloatFromEl(tr, '.game-line-ip');
+                opponentPitchingLines.push({
+                    playerName: playerName,
+                    ip: isNaN(ipVal) ? 0 : ipVal,
+                    h: readIntFromEl(tr, '.game-line-h'),
+                    er: readIntFromEl(tr, '.game-line-er'),
+                    w: readIntFromEl(tr, '.game-line-w'),
+                    l: readIntFromEl(tr, '.game-line-l'),
+                    sv: readIntFromEl(tr, '.game-line-sv'),
+                    result: readStrFromEl(tr, '.game-line-result'),
+                    bf: readIntFromEl(tr, '.game-line-bf'),
+                    ab: readIntFromEl(tr, '.game-line-ab'),
+                    hr: readIntFromEl(tr, '.game-line-hr'),
+                    sh: readIntFromEl(tr, '.game-line-sh'),
+                    sf: readIntFromEl(tr, '.game-line-sf'),
+                    bb: readIntFromEl(tr, '.game-line-bb'),
+                    hbp: readIntFromEl(tr, '.game-line-hbp'),
+                    so: readIntFromEl(tr, '.game-line-so'),
+                    wp: readIntFromEl(tr, '.game-line-wp'),
+                    balk: readIntFromEl(tr, '.game-line-balk'),
+                    r: readIntFromEl(tr, '.game-line-r'),
+                    np: readIntFromEl(tr, '.game-line-np'),
+                    season_era: (function () {
+                        var el = tr.querySelector('.game-line-season-era');
+                        if (!el || el.value === undefined || el.value === '') return null;
+                        var v = parseFloat(el.value);
+                        return isNaN(v) ? null : v;
+                    })()
+                });
+            });
+        }
         try {
             await dbReplaceGameBattingLines(scheduleId, battingLines);
             await dbReplaceGamePitchingLines(scheduleId, pitchingLines);
+            await dbReplaceGameOpponentBattingLines(scheduleId, opponentBattingLines);
+            await dbReplaceGameOpponentPitchingLines(scheduleId, opponentPitchingLines);
             currentScorecardScheduleId = null;
             closeModal('gameScorecardModal');
             alert('저장되었습니다.');
@@ -6275,19 +6700,35 @@
             });
             scorecardModal.addEventListener('input', function (e) {
                 if (!e.target || !e.target.classList) return;
-                if (gameBattingLinesBody && gameBattingLinesBody.contains(e.target) && (e.target.classList.contains('game-line-ab') || e.target.classList.contains('game-line-h'))) {
+                var inBatting = (gameBattingLinesBody && gameBattingLinesBody.contains(e.target)) || (gameOpponentBattingLinesBody && gameOpponentBattingLinesBody.contains(e.target));
+                var inPitching = (gamePitchingLinesBody && gamePitchingLinesBody.contains(e.target)) || (gameOpponentPitchingLinesBody && gameOpponentPitchingLinesBody.contains(e.target));
+                if (inBatting && (e.target.classList.contains('game-line-ab') || e.target.classList.contains('game-line-h'))) {
                     var tr = e.target.closest('tr');
                     var abEl = tr && tr.querySelector('.game-line-ab');
                     var hEl = tr && tr.querySelector('.game-line-h');
                     var avgEl = tr && tr.querySelector('.game-line-avg');
                     if (avgEl && abEl && hEl) avgEl.textContent = gameBattingAvg(abEl.value, hEl.value);
-                } else if (gamePitchingLinesBody && gamePitchingLinesBody.contains(e.target) && (e.target.classList.contains('game-line-ip') || e.target.classList.contains('game-line-er'))) {
+                } else if (inPitching && (e.target.classList.contains('game-line-ip') || e.target.classList.contains('game-line-er'))) {
                     var tr = e.target.closest('tr');
                     var ipEl = tr && tr.querySelector('.game-line-ip');
                     var erEl = tr && tr.querySelector('.game-line-er');
                     var eraEl = tr && tr.querySelector('.game-line-era');
                     if (eraEl && ipEl && erEl) eraEl.textContent = gamePitchingEra(ipEl.value, erEl.value);
                 }
+            });
+            scorecardModal.addEventListener('click', function (e) {
+                var tabBtn = e.target && e.target.closest && e.target.closest('.game-scorecard-tab-btn');
+                if (!tabBtn) return;
+                var tab = tabBtn.getAttribute('data-scorecard-tab');
+                if (!tab) return;
+                var panelOur = document.getElementById('scorecardPanelOur');
+                var panelOpponent = document.getElementById('scorecardPanelOpponent');
+                scorecardModal.querySelectorAll('.game-scorecard-tab-btn').forEach(function (b) {
+                    b.classList.toggle('active', b.getAttribute('data-scorecard-tab') === tab);
+                    b.setAttribute('aria-selected', b.classList.contains('active'));
+                });
+                if (panelOur) panelOur.classList.toggle('active', tab === 'our');
+                if (panelOpponent) panelOpponent.classList.toggle('active', tab === 'opponent');
             });
         }
 
