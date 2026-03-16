@@ -2117,18 +2117,19 @@ input[type="time"]::-webkit-calendar-picker-indicator {
     display: flex;
     gap: 0;
     margin-bottom: 16px;
-    border-bottom: 1px solid var(--border-subtle);
+    border-bottom: 2px solid var(--border-subtle);
 }
 .game-scorecard-tab-btn {
-    padding: 10px 20px;
+    padding: 12px 24px;
     background: transparent;
     border: none;
     border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
     color: var(--text-muted);
     cursor: pointer;
     font-size: 15px;
     font-weight: 600;
-    transition: color 0.2s, border-color 0.2s;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 .game-scorecard-tab-btn:hover {
     color: var(--accent);
@@ -2136,12 +2137,13 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 .game-scorecard-tab-btn.active {
     color: var(--accent);
     border-bottom-color: var(--accent);
+    background: rgba(255, 215, 0, 0.08);
 }
 .game-scorecard-tab-panel {
-    display: none;
+    display: none !important;
 }
 .game-scorecard-tab-panel.active {
-    display: block;
+    display: block !important;
 }
 .game-scorecard-section {
     margin-bottom: 28px;

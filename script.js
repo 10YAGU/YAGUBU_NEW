@@ -5228,7 +5228,7 @@
             scorecardModal.querySelectorAll('.game-scorecard-tab-btn').forEach(function (b) {
                 var isOur = b.getAttribute('data-scorecard-tab') === 'our';
                 b.classList.toggle('active', isOur);
-                b.setAttribute('aria-selected', isOur);
+                b.setAttribute('aria-selected', isOur ? 'true' : 'false');
             });
             var panelOur = document.getElementById('scorecardPanelOur');
             var panelOpponent = document.getElementById('scorecardPanelOpponent');
@@ -6719,16 +6719,21 @@
             scorecardModal.addEventListener('click', function (e) {
                 var tabBtn = e.target && e.target.closest && e.target.closest('.game-scorecard-tab-btn');
                 if (!tabBtn) return;
+                e.preventDefault();
+                e.stopPropagation();
                 var tab = tabBtn.getAttribute('data-scorecard-tab');
                 if (!tab) return;
                 var panelOur = document.getElementById('scorecardPanelOur');
                 var panelOpponent = document.getElementById('scorecardPanelOpponent');
                 scorecardModal.querySelectorAll('.game-scorecard-tab-btn').forEach(function (b) {
-                    b.classList.toggle('active', b.getAttribute('data-scorecard-tab') === tab);
-                    b.setAttribute('aria-selected', b.classList.contains('active'));
+                    var isActive = b.getAttribute('data-scorecard-tab') === tab;
+                    b.classList.toggle('active', isActive);
+                    b.setAttribute('aria-selected', isActive ? 'true' : 'false');
                 });
-                if (panelOur) panelOur.classList.toggle('active', tab === 'our');
-                if (panelOpponent) panelOpponent.classList.toggle('active', tab === 'opponent');
+                if (panelOur) panelOur.classList.remove('active');
+                if (panelOpponent) panelOpponent.classList.remove('active');
+                if (tab === 'our' && panelOur) panelOur.classList.add('active');
+                else if (tab === 'opponent' && panelOpponent) panelOpponent.classList.add('active');
             });
         }
 
