@@ -5095,9 +5095,8 @@
         });
         var show = incomplete.slice(0, MAIN_SCHEDULE_LIMIT);
 
-        // 다음 경기 D-day (첫 번째 예정 경기 기준)
-        var ddayText = '-';
-        if (scheduleDdayWrap) scheduleDdayWrap.style.display = '';
+        // 다음 경기 D-day (첫 번째 예정 경기 기준) — 항상 표시
+        var ddayText = '다음 경기 없음';
         if (incomplete.length > 0) {
             var next = incomplete[0];
             var gameDateStr = next.date;
@@ -5114,7 +5113,7 @@
             }
         }
         if (scheduleDday) scheduleDday.textContent = ddayText;
-        if (scheduleDdayWrap && incomplete.length === 0) scheduleDdayWrap.style.display = 'none';
+        if (scheduleDdayWrap) scheduleDdayWrap.style.display = 'flex';
 
         if (!scheduleList) return;
         if (show.length === 0) {
