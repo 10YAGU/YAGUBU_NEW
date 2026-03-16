@@ -144,6 +144,8 @@
     var scheduleAddModal = document.getElementById('scheduleAddModal');
     var scheduleAddForm = document.getElementById('scheduleAddForm');
     var scheduleList = document.getElementById('scheduleList');
+    var scheduleDdayWrap = document.getElementById('scheduleDdayWrap');
+    var scheduleDday = document.getElementById('scheduleDday');
     var scheduleAddBtn = document.getElementById('scheduleAddBtn');
     var scheduleMoreBtn = document.getElementById('scheduleMoreBtn');
     var scheduleFullList = document.getElementById('scheduleFullList');
@@ -5092,6 +5094,27 @@
             return da.getTime() - db.getTime();
         });
         var show = incomplete.slice(0, MAIN_SCHEDULE_LIMIT);
+
+        // 다음 경기 D-day (첫 번째 예정 경기 기준)
+        var ddayText = '-';
+        if (scheduleDdayWrap) scheduleDdayWrap.style.display = '';
+        if (incomplete.length > 0) {
+            var next = incomplete[0];
+            var gameDateStr = next.date;
+            if (gameDateStr) {
+                var today = new Date();
+                today.setHours(0, 0, 0, 0);
+                var gameDate = new Date(String(gameDateStr).replace(/-/g, '/') + ' 00:00:00');
+                gameDate.setHours(0, 0, 0, 0);
+                var diffMs = gameDate.getTime() - today.getTime();
+                var diffDays = Math.round(diffMs / (24 * 60 * 60 * 1000));
+                if (diffDays === 0) ddayText = 'D-day';
+                else if (diffDays > 0) ddayText = 'D-' + diffDays;
+                else ddayText = 'D+' + Math.abs(diffDays);
+            }
+        }
+        if (scheduleDday) scheduleDday.textContent = ddayText;
+        if (scheduleDdayWrap && incomplete.length === 0) scheduleDdayWrap.style.display = 'none';
 
         if (!scheduleList) return;
         if (show.length === 0) {
