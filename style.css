@@ -1073,12 +1073,56 @@ body[data-theme="dark"] .logo {
     animation: slogan-rainbow 14s linear infinite, slogan-twinkle 1.5s ease-in-out infinite;
 }
 
-/* 하단 2개 카드 */
+/* 하단 2개 카드 — 두 개만 보이도록, 왼쪽(시즌 기록) 더 크게 */
 .bottom-cards {
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 20px;
+    grid-template-columns: 2.2fr 1fr;
+    gap: 24px;
     margin-top: 30px;
+    min-height: 75vh;
+}
+
+/* 기록 및 일정 진입 시: 팀 소개·상단 카드·슬로건·커뮤니티·갤러리 숨김, 두 패널만 전체 화면 */
+body.view-season-only .team-intro-card,
+body.view-season-only .top-cards,
+body.view-season-only .slogan-banner,
+body.view-season-only .community-card,
+body.view-season-only .gallery-card {
+    display: none !important;
+}
+body.view-season-only .bottom-cards {
+    min-height: calc(100vh - 80px);
+    margin-top: 20px;
+}
+body.view-season-only .main-content {
+    padding-top: 16px;
+}
+
+/* 시즌 기록 카드(왼쪽) — 중앙 내용 더 크게 */
+.bottom-cards .season-card {
+    padding: 24px;
+}
+.bottom-cards .season-card .card-header h3 {
+    font-size: 22px;
+}
+.bottom-cards .season-card .tab-btn {
+    padding: 10px 18px;
+    font-size: 16px;
+}
+.bottom-cards .season-card .schedule-table th,
+.bottom-cards .season-card .schedule-table td {
+    padding: 16px 14px;
+    font-size: 16px;
+}
+.bottom-cards .season-card .schedule-table th {
+    font-size: 16px;
+}
+.bottom-cards .season-card .schedule-table.schedule-table-5 {
+    --table-body-max: 320px;
+}
+.bottom-cards .season-card .season-league-select {
+    padding: 10px 14px;
+    font-size: 15px;
 }
 
 /* 시즌 기록 및 일정 */

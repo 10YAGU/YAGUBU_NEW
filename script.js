@@ -6338,7 +6338,18 @@
         setupModals();
         setupSeasonTabs();
         setupTeamTabs();
+        applySeasonOnlyView();
+        window.addEventListener('hashchange', applySeasonOnlyView);
         await refreshAllViews(false);
+    }
+
+    function applySeasonOnlyView() {
+        var hash = (window.location.hash || '').toLowerCase().replace(/^#/, '');
+        if (hash === 'seasonsection') {
+            document.body.classList.add('view-season-only');
+        } else {
+            document.body.classList.remove('view-season-only');
+        }
     }
 
     // 콘솔에서 실행용 (이관/동기화)
