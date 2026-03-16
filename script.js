@@ -6046,6 +6046,9 @@
     }
 
     var THEME_STORAGE_KEY = 'yagubu_theme';
+    var THEME_ORDER = ['light', 'dark', 'dark-blue', 'dark-green', 'dark-purple', 'dark-amoled'];
+    var THEME_LABELS = { light: '라이트', dark: '다크(녹색)', 'dark-blue': '다크(블루)', 'dark-green': '다크(그린)', 'dark-purple': '다크(퍼플)', 'dark-amoled': '다크(AMOLED)' };
+    var THEME_ICONS = { light: '☀️', dark: '🌙', 'dark-blue': '🔵', 'dark-green': '🟢', 'dark-purple': '🟣', 'dark-amoled': '⬛' };
 
     function getStoredTheme() {
         try {
@@ -6057,8 +6060,15 @@
 
     function setStoredTheme(theme) {
         try {
-            localStorage.setItem(THEME_STORAGE_KEY, theme === 'dark' ? 'dark' : 'light');
+            if (THEME_ORDER.indexOf(theme) !== -1) localStorage.setItem(THEME_STORAGE_KEY, theme);
+            else localStorage.setItem(THEME_STORAGE_KEY, theme === 'light' ? 'light' : 'dark');
         } catch (e) {}
+    }
+
+    function getNextTheme(current) {
+        var idx = THEME_ORDER.indexOf(current);
+        if (idx === -1) return THEME_ORDER[0];
+        return THEME_ORDER[(idx + 1) % THEME_ORDER.length];
     }
 
     function applyTheme() {
@@ -6067,19 +6077,21 @@
         if (!theme && typeof window.matchMedia !== 'undefined') {
             theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
-        if (!theme) theme = 'light';
+        if (THEME_ORDER.indexOf(theme) === -1) theme = 'light';
+        setStoredTheme(theme);
         document.body.setAttribute('data-theme', theme);
         var btn = document.getElementById('themeToggleBtn');
         if (btn) {
-            btn.textContent = theme === 'dark' ? '☀️' : '🌙';
-            btn.setAttribute('title', theme === 'dark' ? '라이트 모드' : '다크 모드');
-            btn.setAttribute('aria-label', theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환');
+            btn.textContent = THEME_ICONS[theme] || '🌙';
+            var label = THEME_LABELS[theme] || theme;
+            btn.setAttribute('title', '테마: ' + label + ' (클릭 시 다음 테마)');
+            btn.setAttribute('aria-label', '테마 전환: ' + label);
         }
     }
 
     function toggleTheme() {
         var current = document.body.getAttribute('data-theme') || 'light';
-        var next = current === 'dark' ? 'light' : 'dark';
+        var next = getNextTheme(current);
         setStoredTheme(next);
         applyTheme();
     }
