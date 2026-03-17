@@ -17,7 +17,7 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Malgun Gothic', sans-serif;
     background-color: var(--bg-primary);
-    background-image: url('YAGUBU_CI.png');
+    background-image: url('YAGUBU_H2.png');
     background-repeat: repeat;
     background-size: auto;
     background-position: 0 0;
@@ -244,7 +244,7 @@ body[data-theme="dark-purple"] .logo { text-shadow: 0 0 10px rgba(196, 181, 253,
     color: #ffd0cc;
 }
 
-/* 메인 컨텐츠: 중앙은 단색으로 덮어 상단·좌우·하단 테두리만 YAGUBU_CI 배경 노출 */
+/* 메인 컨텐츠: 중앙은 단색으로 덮어 상단·좌우·하단 테두리만 YAGUBU_H2 격자 배경 노출 */
 .main-content {
     max-width: 1400px;
     margin: 24px auto 24px;
