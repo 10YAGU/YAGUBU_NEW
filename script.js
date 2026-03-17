@@ -137,6 +137,7 @@
     var galleryViewShort = document.getElementById('galleryViewShort');
     var galleryViewImg = document.getElementById('galleryViewImg');
     var galleryViewContent = document.getElementById('galleryViewContent');
+    var galleryViewDownloadBtn = document.getElementById('galleryViewDownloadBtn');
     var galleryViewEditBtn = document.getElementById('galleryViewEditBtn');
     var galleryViewDeleteBtn = document.getElementById('galleryViewDeleteBtn');
     var viewingGalleryId = null;
@@ -4148,7 +4149,67 @@
         var allow = canEditOrDeleteGallery(it, uid);
         setDisabled(galleryViewEditBtn, !allow, allow ? '수정' : '등록자 또는 스텝만 가능');
         setDisabled(galleryViewDeleteBtn, !allow, allow ? '삭제' : '등록자 또는 스텝만 가능');
+        if (galleryViewDownloadBtn) galleryViewDownloadBtn.disabled = !it.imageData;
         openModal('galleryViewModal');
+    }
+
+    function safeFilenamePart(s) {
+        return String(s || '')
+            .replace(/[\\\/:*?"<>|]/g, '_')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 60);
+    }
+
+    function dataUrlToBlob(dataUrl) {
+        var parts = String(dataUrl || '').split(',');
+        if (parts.length < 2) return null;
+        var meta = parts[0] || '';
+        var b64 = parts[1] || '';
+        var mimeMatch = meta.match(/data:([^;]+);base64/i);
+        var mime = mimeMatch ? mimeMatch[1] : 'application/octet-stream';
+        var bin = atob(b64);
+        var len = bin.length;
+        var bytes = new Uint8Array(len);
+        for (var i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+        return new Blob([bytes], { type: mime });
+    }
+
+    async function downloadGalleryViewingImage() {
+        if (!viewingGalleryId) return;
+        var it = await findGalleryItemById(viewingGalleryId, false);
+        if (!it || !it.imageData) { alert('다운로드할 이미지가 없습니다.'); return; }
+
+        var baseName = safeFilenamePart(it.title || it.shortText || 'YAGUBU_GALLERY');
+        var datePart = safeFilenamePart(it.date || '');
+        var filenameBase = (datePart ? (datePart + '_' + baseName) : baseName) || 'YAGUBU_GALLERY';
+
+        try {
+            var href = it.imageData;
+            var isDataUrl = /^data:/i.test(href);
+            if (isDataUrl) {
+                var blob = dataUrlToBlob(href);
+                if (!blob) throw new Error('이미지 변환 실패');
+                var ext = (blob.type === 'image/png') ? 'png' : (blob.type === 'image/jpeg') ? 'jpg' : (blob.type === 'image/gif') ? 'gif' : 'png';
+                var url = URL.createObjectURL(blob);
+                try {
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = filenameBase + '.' + ext;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                } finally {
+                    setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 3000);
+                }
+                return;
+            }
+
+            // URL인 경우: 새 탭 열기(다운로드 속성은 크로스오리진 제한 가능)
+            window.open(href, '_blank', 'noopener');
+        } catch (e) {
+            alert('다운로드에 실패했습니다: ' + (e && e.message ? e.message : String(e)));
+        }
     }
 
     function setGalleryFilterSelect(selectEl, options, currentValue) {
@@ -6661,6 +6722,10 @@
             if (!viewingGalleryId) return;
             closeGalleryViewModal();
             return openGalleryEditModal(viewingGalleryId);
+        }));
+        if (galleryViewDownloadBtn) galleryViewDownloadBtn.addEventListener('click', withAuth(function (e) {
+            if (e && e.preventDefault) e.preventDefault();
+            return downloadGalleryViewingImage();
         }));
         if (galleryViewDeleteBtn) galleryViewDeleteBtn.addEventListener('click', withAuth(function (e) {
             if (e && e.preventDefault) e.preventDefault();
