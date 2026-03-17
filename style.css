@@ -17,29 +17,11 @@
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Malgun Gothic', sans-serif;
     background-color: var(--bg-primary);
-    color: var(--text-primary);
-    min-height: 100vh;
-    position: relative;
-}
-/* YAGUBU_CI 배경 레이어 — 눈에 띄는 펄스 + 흐르는 효과 */
-body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: -1;
     background-image: url('YAGUBU_CI.png');
     background-repeat: repeat;
     background-size: auto;
-    background-position: 0 0;
-    animation: ci-bg-pulse 2.5s ease-in-out infinite, ci-bg-flow 15s linear infinite;
-}
-@keyframes ci-bg-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.35; }
-}
-@keyframes ci-bg-flow {
-    0% { background-position: 0 0; }
-    100% { background-position: 200px 150px; }
+    color: var(--text-primary);
+    min-height: 100vh;
 }
 
 body[data-theme="dark"] {
