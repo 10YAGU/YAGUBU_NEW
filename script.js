@@ -970,6 +970,59 @@
         });
     }
 
+    async function dbListGameBattingLinesByScheduleIds(scheduleIds) {
+        var ids = (scheduleIds || []).filter(Boolean);
+        if (!ids.length) return [];
+        if (!isSupabaseReady()) {
+            return (getGameBattingLines() || []).filter(function (r) { return r && ids.indexOf(r.scheduleId) !== -1; });
+        }
+        var client = ensureSb();
+        var res = await client.from('game_batting_lines').select('*').in('schedule_id', ids);
+        if (res.error) throw res.error;
+        return (res.data || []).map(function (r) {
+            return {
+                id: r.id,
+                scheduleId: r.schedule_id,
+                playerId: r.player_id,
+                pa: r.pa != null ? r.pa : 0,
+                ab: r.ab,
+                h: r.h,
+                rbi: r.rbi,
+                r: r.r,
+                bb: r.bb != null ? r.bb : 0,
+                so: r.so != null ? r.so : 0,
+                sb: r.sb,
+                battingOrder: r.batting_order != null ? r.batting_order : null,
+                updatedAt: r.created_at ? sbMs(r.created_at) : Date.now()
+            };
+        });
+    }
+
+    async function dbListGamePitchingLinesByScheduleIds(scheduleIds) {
+        var ids = (scheduleIds || []).filter(Boolean);
+        if (!ids.length) return [];
+        if (!isSupabaseReady()) {
+            return (getGamePitchingLines() || []).filter(function (r) { return r && ids.indexOf(r.scheduleId) !== -1; });
+        }
+        var client = ensureSb();
+        var res = await client.from('game_pitching_lines').select('*').in('schedule_id', ids);
+        if (res.error) throw res.error;
+        return (res.data || []).map(function (r) {
+            return {
+                id: r.id,
+                scheduleId: r.schedule_id,
+                playerId: r.player_id,
+                ip: r.ip,
+                h: r.h,
+                er: r.er,
+                w: r.w,
+                l: r.l,
+                sv: r.sv,
+                updatedAt: r.created_at ? sbMs(r.created_at) : Date.now()
+            };
+        });
+    }
+
     async function dbReplaceGameBattingLines(scheduleId, lines) {
         if (!scheduleId) return;
         if (!isSupabaseReady()) {
@@ -1492,6 +1545,20 @@
         if (res.error) throw res.error;
     }
 
+    async function dbDeletePersonalRecordsByLeague(leagueId) {
+        var lid = normalizeLeagueId(leagueId || 'nono');
+        if (!isSupabaseReady()) {
+            var recs = (getPersonalRecords() || []).filter(function (r) {
+                return normalizeLeagueId((r && r.leagueId) || 'nono') !== lid;
+            });
+            savePersonalRecords(recs);
+            return;
+        }
+        var client = ensureSb();
+        var res = await client.from('personal_records').delete().eq('league_id', lid);
+        if (res.error) throw res.error;
+    }
+
     async function dbListPitcherRecords() {
         if (!isSupabaseReady()) return getPitcherRecords();
         var client = ensureSb();
@@ -1546,6 +1613,20 @@
         }
         var client = ensureSb();
         var res = await client.from('pitcher_records').delete().eq('player_id', playerId).eq('league_id', normalizeLeagueId(leagueId || 'nono'));
+        if (res.error) throw res.error;
+    }
+
+    async function dbDeletePitcherRecordsByLeague(leagueId) {
+        var lid = normalizeLeagueId(leagueId || 'nono');
+        if (!isSupabaseReady()) {
+            var recs = (getPitcherRecords() || []).filter(function (r) {
+                return normalizeLeagueId((r && r.leagueId) || 'nono') !== lid;
+            });
+            savePitcherRecords(recs);
+            return;
+        }
+        var client = ensureSb();
+        var res = await client.from('pitcher_records').delete().eq('league_id', lid);
         if (res.error) throw res.error;
     }
 
@@ -5311,6 +5392,98 @@
         return el && el.value !== undefined ? String(el.value).trim() : '';
     }
 
+    async function syncLeagueRecordsFromGameScorecard(scheduleId) {
+        if (!scheduleId) return;
+        var schedulesAll = await fetchSchedules(true);
+        var current = (schedulesAll || []).filter(function (s) { return s && s.id === scheduleId; })[0];
+        if (!current) return;
+
+        var leagueId = normalizeLeagueId((current && current.leagueId) || 'nono');
+        var leagueSchedules = filterSchedulesByLeague(schedulesAll || [], leagueId);
+        leagueSchedules = filterSchedulesExcludeVenues(leagueSchedules);
+        var ids = leagueSchedules.map(function (s) { return s && s.id ? s.id : ''; }).filter(Boolean);
+
+        var battingLines = await dbListGameBattingLinesByScheduleIds(ids);
+        var pitchingLines = await dbListGamePitchingLinesByScheduleIds(ids);
+
+        var battingByPlayer = {};
+        (battingLines || []).forEach(function (ln) {
+            if (!ln || !ln.playerId) return;
+            var pid = String(ln.playerId);
+            if (!battingByPlayer[pid]) battingByPlayer[pid] = { pa: 0, ab: 0, h: 0, rbi: 0, r: 0, bb: 0, so: 0, sb: 0 };
+            var x = battingByPlayer[pid];
+            x.pa += toInt(ln.pa);
+            x.ab += toInt(ln.ab);
+            x.h += toInt(ln.h);
+            x.rbi += toInt(ln.rbi);
+            x.r += toInt(ln.r);
+            x.bb += toInt(ln.bb);
+            x.so += toInt(ln.so);
+            x.sb += toInt(ln.sb);
+        });
+
+        var pitchingByPlayer = {};
+        (pitchingLines || []).forEach(function (ln) {
+            if (!ln || !ln.playerId) return;
+            var pid = String(ln.playerId);
+            if (!pitchingByPlayer[pid]) pitchingByPlayer[pid] = { ip: 0, h: 0, er: 0, w: 0, l: 0, sv: 0 };
+            var p = pitchingByPlayer[pid];
+            p.ip += parseFloat(String(ln.ip || 0)) || 0;
+            p.h += toInt(ln.h);
+            p.er += toInt(ln.er);
+            p.w += toInt(ln.w);
+            p.l += toInt(ln.l);
+            p.sv += toInt(ln.sv);
+        });
+
+        // 리그 기록은 경기기록지 기준으로 재집계해 정합성 유지(수정/삭제 시 중복 누적 방지)
+        await dbDeletePersonalRecordsByLeague(leagueId);
+        var personalRows = Object.keys(battingByPlayer).map(function (pid) {
+            var x = battingByPlayer[pid];
+            var pa = toInt(x.pa);
+            var ab = toInt(x.ab);
+            var h = toInt(x.h);
+            return {
+                leagueId: leagueId,
+                playerId: pid,
+                pa: pa > 0 ? pa : ab,
+                ab: ab,
+                h: h,
+                rbi: toInt(x.rbi),
+                r: toInt(x.r),
+                bb: toInt(x.bb),
+                so: toInt(x.so),
+                sb: toInt(x.sb),
+                avg: calcAvg(h, ab),
+                updatedAt: Date.now()
+            };
+        });
+        for (var i = 0; i < personalRows.length; i++) {
+            await dbUpsertPersonalRecord(personalRows[i]);
+        }
+
+        await dbDeletePitcherRecordsByLeague(leagueId);
+        var pitcherRows = Object.keys(pitchingByPlayer).map(function (pid) {
+            var p = pitchingByPlayer[pid];
+            return {
+                leagueId: leagueId,
+                playerId: pid,
+                ip: parseFloat(String(p.ip || 0)),
+                h: toInt(p.h),
+                er: toInt(p.er),
+                w: toInt(p.w),
+                l: toInt(p.l),
+                sv: toInt(p.sv),
+                updatedAt: Date.now()
+            };
+        });
+        for (var j = 0; j < pitcherRows.length; j++) {
+            await dbUpsertPitcherRecord(pitcherRows[j]);
+        }
+
+        invalidateDbCache(['personal', 'pitcher']);
+    }
+
     async function handleGameScorecardSave() {
         var scheduleId = currentScorecardScheduleId;
         if (!scheduleId) return;
@@ -5460,8 +5633,12 @@
             await dbReplaceGamePitchingLines(scheduleId, pitchingLines);
             await dbReplaceGameOpponentBattingLines(scheduleId, opponentBattingLines);
             await dbReplaceGameOpponentPitchingLines(scheduleId, opponentPitchingLines);
+            await syncLeagueRecordsFromGameScorecard(scheduleId);
             currentScorecardScheduleId = null;
             closeModal('gameScorecardModal');
+            await loadPersonalRecordsTable(true);
+            await loadPitcherRecordsTable(true);
+            await loadTeamRecordsTab(true);
             alert('저장되었습니다.');
         } catch (err) {
             console.error(err);
