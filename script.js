@@ -2761,9 +2761,26 @@
             });
             if (totalIp > 0) teamEra = ((totalEr * 9) / totalIp).toFixed(2);
         }
+        // 투수기록이 아직 없더라도, 완료 경기 점수(상대 득점) 기준으로 최소 표시값 제공
+        if (teamEra === '-') {
+            var completedForEra = filterSchedulesExcludeVenues(schedulesAll || []).filter(function (s) {
+                return s && s.status === '완료' && s.opponentScore !== undefined && s.opponentScore !== '' && !isNaN(parseInt(String(s.opponentScore), 10));
+            });
+            if (completedForEra.length > 0) {
+                var totalOppRuns = 0;
+                completedForEra.forEach(function (s) { totalOppRuns += toInt(s.opponentScore); });
+                // 9이닝 기준 ERA가 없을 때, 경기당 실점 평균으로 대체 표시
+                teamEra = (totalOppRuns / completedForEra.length).toFixed(2);
+            }
+        }
 
         // 최근 전적: 완료된 경기 중 최근 10경기 기준 승/패 (시범경기·올스타 구장 제외)
-        var schedules = filterSchedulesExcludeVenues(schedulesAll || []).filter(function (s) { return s.status === '완료' && (s.result === '승' || s.result === '패'); });
+        // result가 비어 있어도 스코어 기반으로 승/패/무 판정(getResultFromSchedule)
+        var schedules = filterSchedulesExcludeVenues(schedulesAll || []).filter(function (s) {
+            if (!s || s.status !== '완료') return false;
+            var r = getResultFromSchedule(s);
+            return r === '승' || r === '패';
+        });
         schedules.sort(function (a, b) {
             var da = a.date ? new Date(a.date) : null;
             var db = b.date ? new Date(b.date) : null;
@@ -2775,8 +2792,9 @@
         var recent = schedules.slice(0, 10);
         var w = 0, l = 0;
         recent.forEach(function (s) {
-            if (s.result === '승') w += 1;
-            else if (s.result === '패') l += 1;
+            var r = getResultFromSchedule(s);
+            if (r === '승') w += 1;
+            else if (r === '패') l += 1;
         });
 
         return { teamAvg: teamAvg, teamEra: teamEra, recentW: w, recentL: l };
@@ -5652,6 +5670,32 @@
                 });
             });
         }
+        // 같은 선수 중복 선택 저장 방지(우리팀 기준)
+        function findDuplicatePlayerId(lines) {
+            var seen = {};
+            for (var i = 0; i < (lines || []).length; i++) {
+                var pid = lines[i] && lines[i].playerId ? String(lines[i].playerId) : '';
+                if (!pid) continue;
+                if (seen[pid]) return pid;
+                seen[pid] = true;
+            }
+            return '';
+        }
+        function playerDisplayName(pid) {
+            var p = (currentScorecardPlayers || []).filter(function (x) { return String(x.id) === String(pid); })[0];
+            if (!p) return pid;
+            return String(p.jerseyNo || '') + ' ' + String(p.name || '');
+        }
+        var dupBat = findDuplicatePlayerId(battingLines);
+        if (dupBat) {
+            alert('타자 기록에 동일 선수가 중복 선택되었습니다: ' + playerDisplayName(dupBat));
+            return;
+        }
+        var dupPitch = findDuplicatePlayerId(pitchingLines);
+        if (dupPitch) {
+            alert('투수 기록에 동일 선수가 중복 선택되었습니다: ' + playerDisplayName(dupPitch));
+            return;
+        }
         var opponentBattingLines = [];
         if (gameOpponentBattingLinesBody) {
             gameOpponentBattingLinesBody.querySelectorAll('tr.game-opponent-row').forEach(function (tr) {
@@ -5725,8 +5769,6 @@
             await dbReplaceGameOpponentBattingLines(scheduleId, opponentBattingLines);
             await dbReplaceGameOpponentPitchingLines(scheduleId, opponentPitchingLines);
             await syncLeagueRecordsFromGameScorecard(scheduleId);
-            currentScorecardScheduleId = null;
-            closeModal('gameScorecardModal');
             await loadPersonalRecordsTable(true);
             await loadPitcherRecordsTable(true);
             await loadTeamRecordsTab(true);
