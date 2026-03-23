@@ -2658,7 +2658,8 @@
     }
 
     async function deriveRecordsFromGameLines(leagueId, force) {
-        var schedules = filterSchedulesByLeague(await fetchSchedules(!!force), leagueId);
+        // 기록지 저장 직후에도 즉시 반영되도록 스케줄은 항상 최신으로 조회
+        var schedules = filterSchedulesByLeague(await fetchSchedules(true), leagueId);
         schedules = filterSchedulesExcludeVenues(schedules);
         var ids = (schedules || []).map(function (s) { return s && s.id ? s.id : ''; }).filter(Boolean);
         if (!ids.length) return { personal: [], pitcher: [], hasGameLines: false };
@@ -2881,7 +2882,8 @@
     }
 
     function pitcherRecordsForLeague(records, leagueId) {
-        var lid = leagueId ? normalizeLeagueId(leagueId) : 'nono';
+        if (!leagueId) return (records || []).filter(function (r) { return !!r; });
+        var lid = normalizeLeagueId(leagueId);
         return (records || []).filter(function (r) {
             return r && normalizeLeagueId(r.leagueId || 'nono') === lid;
         });
