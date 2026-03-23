@@ -2657,6 +2657,82 @@
         return aggregatePersonalRecords(filtered).map(function (x) { x.leagueId = lid; return x; });
     }
 
+    async function deriveRecordsFromGameLines(leagueId, force) {
+        var schedules = filterSchedulesByLeague(await fetchSchedules(!!force), leagueId);
+        schedules = filterSchedulesExcludeVenues(schedules);
+        var ids = (schedules || []).map(function (s) { return s && s.id ? s.id : ''; }).filter(Boolean);
+        if (!ids.length) return { personal: [], pitcher: [], hasGameLines: false };
+
+        var battingLines = await dbListGameBattingLinesByScheduleIds(ids);
+        var pitchingLines = await dbListGamePitchingLinesByScheduleIds(ids);
+        var hasGameLines = (battingLines && battingLines.length > 0) || (pitchingLines && pitchingLines.length > 0);
+
+        var byBat = {};
+        (battingLines || []).forEach(function (ln) {
+            if (!ln || !ln.playerId) return;
+            var pid = String(ln.playerId);
+            if (!byBat[pid]) byBat[pid] = { pa: 0, ab: 0, h: 0, rbi: 0, r: 0, bb: 0, so: 0, sb: 0 };
+            var it = byBat[pid];
+            it.pa += toInt(ln.pa);
+            it.ab += toInt(ln.ab);
+            it.h += toInt(ln.h);
+            it.rbi += toInt(ln.rbi);
+            it.r += toInt(ln.r);
+            it.bb += toInt(ln.bb);
+            it.so += toInt(ln.so);
+            it.sb += toInt(ln.sb);
+        });
+        var personal = Object.keys(byBat).map(function (pid) {
+            var it = byBat[pid];
+            var ab = toInt(it.ab);
+            var h = toInt(it.h);
+            return {
+                leagueId: normalizeLeagueId(leagueId || 'nono'),
+                playerId: pid,
+                pa: toInt(it.pa) > 0 ? toInt(it.pa) : ab,
+                ab: ab,
+                h: h,
+                rbi: toInt(it.rbi),
+                r: toInt(it.r),
+                bb: toInt(it.bb),
+                so: toInt(it.so),
+                sb: toInt(it.sb),
+                avg: calcAvg(h, ab),
+                updatedAt: Date.now()
+            };
+        });
+
+        var byPitch = {};
+        (pitchingLines || []).forEach(function (ln) {
+            if (!ln || !ln.playerId) return;
+            var pid = String(ln.playerId);
+            if (!byPitch[pid]) byPitch[pid] = { ip: 0, h: 0, er: 0, w: 0, l: 0, sv: 0 };
+            var it = byPitch[pid];
+            it.ip += parseFloat(String(ln.ip || 0)) || 0;
+            it.h += toInt(ln.h);
+            it.er += toInt(ln.er);
+            it.w += toInt(ln.w);
+            it.l += toInt(ln.l);
+            it.sv += toInt(ln.sv);
+        });
+        var pitcher = Object.keys(byPitch).map(function (pid) {
+            var it = byPitch[pid];
+            return {
+                leagueId: normalizeLeagueId(leagueId || 'nono'),
+                playerId: pid,
+                ip: parseFloat(String(it.ip || 0)),
+                h: toInt(it.h),
+                er: toInt(it.er),
+                w: toInt(it.w),
+                l: toInt(it.l),
+                sv: toInt(it.sv),
+                updatedAt: Date.now()
+            };
+        });
+
+        return { personal: personal, pitcher: pitcher, hasGameLines: hasGameLines };
+    }
+
     function computeTeamRecords(players, recs, schedulesAll, pitcherRecs) {
         // 개인기록 합산으로 팀 타율 계산 (활동 선수 기준, 관리자 제외)
         players = (players || []).filter(isPlayerForRecords);
@@ -2764,6 +2840,11 @@
         var leagueId = getSelectedLeague();
         var recs = recordsForLeague(await fetchPersonalRecords(!!force), leagueId);
         var pitcherRecs = pitcherRecordsForLeague(await fetchPitcherRecords(!!force), leagueId);
+        var derived = await deriveRecordsFromGameLines(leagueId, !!force);
+        if (derived.hasGameLines) {
+            recs = derived.personal;
+            pitcherRecs = derived.pitcher;
+        }
         var schedules = filterSchedulesByLeague(await fetchSchedules(!!force), leagueId);
         var summary = computeTeamRecords(players, recs, schedules, pitcherRecs);
         if (teamBattingAvg) teamBattingAvg.textContent = summary.teamAvg;
@@ -2870,6 +2951,8 @@
         players.sort(function (a, b) { return toInt(a.jerseyNo) - toInt(b.jerseyNo); });
         var leagueId = getSelectedLeague();
         var records = recordsForLeague(await fetchPersonalRecords(!!force), leagueId);
+        var derived = await deriveRecordsFromGameLines(leagueId, !!force);
+        if (derived.hasGameLines) records = derived.personal;
         var byId = {};
         records.forEach(function (r) { if (r && r.playerId) byId[String(r.playerId)] = r; });
 
@@ -2919,6 +3002,8 @@
         players.sort(function (a, b) { return toInt(a.jerseyNo) - toInt(b.jerseyNo); });
         var leagueId = getSelectedLeague();
         var records = recordsForLeague(await fetchPersonalRecords(!!force), leagueId);
+        var derived = await deriveRecordsFromGameLines(leagueId, !!force);
+        if (derived.hasGameLines) records = derived.personal;
         var byId = {};
         records.forEach(function (r) { if (r && r.playerId) byId[String(r.playerId)] = r; });
 
@@ -3163,6 +3248,8 @@
         players.sort(function (a, b) { return toInt(a.jerseyNo) - toInt(b.jerseyNo); });
         var leagueId = getSelectedLeague();
         var records = pitcherRecordsForLeague(await fetchPitcherRecords(!!force), leagueId);
+        var derived = await deriveRecordsFromGameLines(leagueId, !!force);
+        if (derived.hasGameLines) records = derived.pitcher;
         var byId = {};
         records.forEach(function (r) { if (r && r.playerId) byId[String(r.playerId)] = r; });
 
@@ -3208,6 +3295,8 @@
         players.sort(function (a, b) { return toInt(a.jerseyNo) - toInt(b.jerseyNo); });
         var leagueId = getSelectedLeague();
         var records = pitcherRecordsForLeague(await fetchPitcherRecords(!!force), leagueId);
+        var derived = await deriveRecordsFromGameLines(leagueId, !!force);
+        if (derived.hasGameLines) records = derived.pitcher;
         var byId = {};
         records.forEach(function (r) { if (r && r.playerId) byId[String(r.playerId)] = r; });
 
