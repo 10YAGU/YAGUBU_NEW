@@ -3261,6 +3261,14 @@
         if (pitchEra) pitchEra.value = parsed.ok ? calcEra(er, parsed.ipForStore) : '-';
     }
 
+    /** 기록지(또는 집계된 투수기록)에 실제 투수 스탯이 있는지 — 이닝·승패·피안타 등 하나라도 있으면 표시 */
+    function hasPitcherScorecardStats(r) {
+        if (!r) return false;
+        var ip = parseFloat(String(r.ip || 0)) || 0;
+        if (ip > 0) return true;
+        return toInt(r.h) + toInt(r.er) + toInt(r.w) + toInt(r.l) + toInt(r.sv) + toInt(r.bf) + toInt(r.np) > 0;
+    }
+
     async function loadPitcherRecordsTable(force) {
         if (!pitcherRecordTableBody) return;
         seedPlayersIfEmpty();
@@ -3273,8 +3281,13 @@
         var byId = {};
         records.forEach(function (r) { if (r && r.playerId) byId[String(r.playerId)] = r; });
 
+        players = players.filter(function (p) {
+            var r = byId[p.id];
+            return hasPitcherScorecardStats(r);
+        });
+
         if (players.length === 0) {
-            pitcherRecordTableBody.innerHTML = '<tr><td colspan="9" class="schedule-table-empty">활동 중인 선수가 없습니다.</td></tr>';
+            pitcherRecordTableBody.innerHTML = '<tr><td colspan="9" class="schedule-table-empty">기록지에 등록된 투수 기록이 없습니다.</td></tr>';
             return;
         }
 
@@ -3320,8 +3333,13 @@
         var byId = {};
         records.forEach(function (r) { if (r && r.playerId) byId[String(r.playerId)] = r; });
 
+        players = players.filter(function (p) {
+            var r = byId[p.id];
+            return hasPitcherScorecardStats(r);
+        });
+
         if (players.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" class="schedule-table-empty">활동 중인 선수가 없습니다.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="schedule-table-empty">기록지에 등록된 투수 기록이 없습니다.</td></tr>';
             return;
         }
 
