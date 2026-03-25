@@ -2662,11 +2662,12 @@
         var schedules = filterSchedulesByLeague(await fetchSchedules(true), leagueId);
         schedules = filterSchedulesExcludeVenues(schedules);
         var ids = (schedules || []).map(function (s) { return s && s.id ? s.id : ''; }).filter(Boolean);
-        if (!ids.length) return { personal: [], pitcher: [], hasGameLines: false };
+        if (!ids.length) return { personal: [], pitcher: [], hasGameLines: false, hasPitchingGameLines: false };
 
         var battingLines = await dbListGameBattingLinesByScheduleIds(ids);
         var pitchingLines = await dbListGamePitchingLinesByScheduleIds(ids);
-        var hasGameLines = (battingLines && battingLines.length > 0) || (pitchingLines && pitchingLines.length > 0);
+        var hasPitchingGameLines = !!(pitchingLines && pitchingLines.length > 0);
+        var hasGameLines = (battingLines && battingLines.length > 0) || hasPitchingGameLines;
 
         var byBat = {};
         (battingLines || []).forEach(function (ln) {
@@ -2731,7 +2732,7 @@
             };
         });
 
-        return { personal: personal, pitcher: pitcher, hasGameLines: hasGameLines };
+        return { personal: personal, pitcher: pitcher, hasGameLines: hasGameLines, hasPitchingGameLines: hasPitchingGameLines };
     }
 
     function computeTeamRecords(players, recs, schedulesAll, pitcherRecs) {
@@ -2860,10 +2861,8 @@
         var recs = recordsForLeague(await fetchPersonalRecords(!!force), leagueId);
         var pitcherRecs = pitcherRecordsForLeague(await fetchPitcherRecords(!!force), leagueId);
         var derived = await deriveRecordsFromGameLines(leagueId, !!force);
-        if (derived.hasGameLines) {
-            recs = derived.personal;
-            pitcherRecs = derived.pitcher;
-        }
+        if (derived.hasGameLines) recs = derived.personal;
+        if (derived.hasPitchingGameLines) pitcherRecs = derived.pitcher;
         var schedules = filterSchedulesByLeague(await fetchSchedules(!!force), leagueId);
         var summary = computeTeamRecords(players, recs, schedules, pitcherRecs);
         if (teamBattingAvg) teamBattingAvg.textContent = summary.teamAvg;
@@ -3261,12 +3260,12 @@
         if (pitchEra) pitchEra.value = parsed.ok ? calcEra(er, parsed.ipForStore) : '-';
     }
 
-    /** 기록지(또는 집계된 투수기록)에 실제 투수 스탯이 있는지 — 이닝·승패·피안타 등 하나라도 있으면 표시 */
+    /** 투수기록 표(이닝·피안타·자책·승·패·세)에 쓰는 수치만 기준 — 화면에 없는 bf/np 등은 제외 */
     function hasPitcherScorecardStats(r) {
         if (!r) return false;
         var ip = parseFloat(String(r.ip || 0)) || 0;
         if (ip > 0) return true;
-        return toInt(r.h) + toInt(r.er) + toInt(r.w) + toInt(r.l) + toInt(r.sv) + toInt(r.bf) + toInt(r.np) > 0;
+        return toInt(r.h) + toInt(r.er) + toInt(r.w) + toInt(r.l) + toInt(r.sv) > 0;
     }
 
     async function loadPitcherRecordsTable(force) {
@@ -3277,12 +3276,12 @@
         var leagueId = getSelectedLeague();
         var records = pitcherRecordsForLeague(await fetchPitcherRecords(!!force), leagueId);
         var derived = await deriveRecordsFromGameLines(leagueId, !!force);
-        if (derived.hasGameLines) records = derived.pitcher;
+        if (derived.hasPitchingGameLines) records = derived.pitcher;
         var byId = {};
         records.forEach(function (r) { if (r && r.playerId) byId[String(r.playerId)] = r; });
 
         players = players.filter(function (p) {
-            var r = byId[p.id];
+            var r = byId[String(p.id)];
             return hasPitcherScorecardStats(r);
         });
 
@@ -3292,7 +3291,7 @@
         }
 
         pitcherRecordTableBody.innerHTML = players.map(function (p) {
-            var r = byId[p.id] || null;
+            var r = byId[String(p.id)] || null;
             var ip = r ? parseFloat(String(r.ip || 0)) : 0;
             var h = r ? toInt(r.h) : 0;
             var er = r ? toInt(r.er) : 0;
@@ -3329,12 +3328,12 @@
         var leagueId = getSelectedLeague();
         var records = pitcherRecordsForLeague(await fetchPitcherRecords(!!force), leagueId);
         var derived = await deriveRecordsFromGameLines(leagueId, !!force);
-        if (derived.hasGameLines) records = derived.pitcher;
+        if (derived.hasPitchingGameLines) records = derived.pitcher;
         var byId = {};
         records.forEach(function (r) { if (r && r.playerId) byId[String(r.playerId)] = r; });
 
         players = players.filter(function (p) {
-            var r = byId[p.id];
+            var r = byId[String(p.id)];
             return hasPitcherScorecardStats(r);
         });
 
@@ -3344,7 +3343,7 @@
         }
 
         tbody.innerHTML = players.map(function (p) {
-            var r = byId[p.id] || null;
+            var r = byId[String(p.id)] || null;
             var ip = r ? parseFloat(String(r.ip || 0)) : 0;
             var h = r ? toInt(r.h) : 0;
             var er = r ? toInt(r.er) : 0;
@@ -6728,6 +6727,7 @@
                 btn.classList.add('active');
                 var panel = document.getElementById('tab-' + tab);
                 if (panel) panel.classList.add('active');
+                if (tab === 'pitcher') loadPitcherRecordsTable(true).catch(console.error);
             });
         });
     }
